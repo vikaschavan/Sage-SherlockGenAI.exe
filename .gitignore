@@ -35,6 +35,7 @@ Thumbs.db
 # Deck / scripts not needed in repo
 fill_deck.py
 *.pptx
+*.pdf
 ~$*
 artifacts/
 ProblemStatement/
