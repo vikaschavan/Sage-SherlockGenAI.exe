@@ -1,0 +1,24 @@
+# Python artifacts
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.venv
+
+# Local dev database (reseeds from mock data on startup)
+sage_local.db
+
+# Node dependencies (rebuilt in Docker Stage 1)
+frontend/node_modules
+frontend/.vite
+
+# Git
+.git
+.gitignore
+
+# Tests
+tests/
+
+# NOTE: token.json and auth/client_secret.json are intentionally included
+# for the hackathon demo so Cloud Run can authenticate with Google Workspace APIs.
+# In production, use Secret Manager volumes instead.

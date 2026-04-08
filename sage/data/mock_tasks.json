@@ -1,0 +1,74 @@
+[
+  {
+    "title": "Finalise Q2 Revenue Report",
+    "description": "Consolidate numbers from Finance, add exec summary, format slides.",
+    "priority": "high",
+    "status": "in_progress",
+    "due_date": "2026-04-11T17:00:00",
+    "assignee": "me",
+    "project": "Q2 Planning"
+  },
+  {
+    "title": "Review vendor contract - CloudOps Inc.",
+    "description": "Legal has flagged two clauses in section 4.2. Need sign-off by EOW.",
+    "priority": "high",
+    "status": "todo",
+    "due_date": "2026-04-10T12:00:00",
+    "assignee": "me",
+    "project": "Procurement"
+  },
+  {
+    "title": "Prepare slides for Product Review Monday",
+    "description": "Cover: roadmap status, blockers, Q3 priorities. 15 slides max.",
+    "priority": "high",
+    "status": "todo",
+    "due_date": "2026-04-12T09:00:00",
+    "assignee": "me",
+    "project": "Product"
+  },
+  {
+    "title": "Send follow-up to client - Apex Solutions",
+    "description": "Share proposal deck and next steps from Thursday call.",
+    "priority": "medium",
+    "status": "todo",
+    "due_date": "2026-04-09T17:00:00",
+    "assignee": "me",
+    "project": "Sales"
+  },
+  {
+    "title": "Update team OKRs in Confluence",
+    "description": "Reflect changes agreed in last week's leadership sync.",
+    "priority": "medium",
+    "status": "todo",
+    "due_date": "2026-04-14T17:00:00",
+    "assignee": "me",
+    "project": "Leadership"
+  },
+  {
+    "title": "Schedule 1:1s for new team member onboarding",
+    "description": "Priya joins Monday. Book 30-min intro calls with each team lead.",
+    "priority": "medium",
+    "status": "todo",
+    "due_date": "2026-04-08T17:00:00",
+    "assignee": "me",
+    "project": "People"
+  },
+  {
+    "title": "Review pull request - auth service refactor",
+    "description": "PR #247. Security team needs this merged before the Wednesday deploy.",
+    "priority": "high",
+    "status": "todo",
+    "due_date": "2026-04-08T12:00:00",
+    "assignee": "me",
+    "project": "Engineering"
+  },
+  {
+    "title": "Monthly newsletter draft",
+    "description": "Compile product updates and team highlights. Due to comms team.",
+    "priority": "low",
+    "status": "todo",
+    "due_date": "2026-04-15T17:00:00",
+    "assignee": "me",
+    "project": "Comms"
+  }
+]

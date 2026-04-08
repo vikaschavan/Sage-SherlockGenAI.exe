@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.env
+dist/
+build/
+
+# Credentials — never commit these
+token.json
+auth/client_secret.json
+sage/token.json
+sage/auth/client_secret.json
+client_secret*.json
+
+# Database
+*.db
+*.sqlite
+
+# Node
+node_modules/
+frontend/.vite/
+
+# Build output — Cloud Build produces this in GCP
+frontend/dist/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Deck / scripts not needed in repo
+fill_deck.py
+*.pptx
+~$*
+artifacts/
+ProblemStatement/
+deploy.sh
