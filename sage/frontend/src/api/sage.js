@@ -16,6 +16,27 @@ async function parseResponse(res) {
   throw new Error(detail);
 }
 
+export function formatApiError(error, fallback) {
+  const message = error?.message || "";
+
+  if (message.includes("RESOURCE_EXHAUSTED") || message.includes("Quota exceeded")) {
+    return "Sage is live, but the Gemini free-tier request limit was hit. Wait about 30 seconds and try again, or move the project to paid billing.";
+  }
+
+  if (message.includes("PERMISSION_DENIED") || message.includes("API key")) {
+    return "Sage is live, but the Gemini API key is invalid or blocked. Update the deployed key and redeploy.";
+  }
+
+  if (
+    message.includes("Workspace integrations are not configured") ||
+    message.includes("could not locate runnable browser")
+  ) {
+    return "Sage is live, but Google Workspace access is not configured for Cloud Run. Meeting briefs and debrief docs need a deployed OAuth token or service-account based setup.";
+  }
+
+  return fallback;
+}
+
 export async function getBackendHealth() {
   const res = await fetch(`${BASE_URL}/health`, {
     cache: "no-store",

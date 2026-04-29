@@ -3,7 +3,7 @@ import { Users, ExternalLink, Loader2, FileText, ChevronRight } from "lucide-rea
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { todayEvents } from "../data/mockEvents";
-import { getMeetingBrief } from "../api/sage";
+import { formatApiError, getMeetingBrief } from "../api/sage";
 
 const meetings = todayEvents.filter((e) => e.type === "meeting");
 
@@ -26,7 +26,12 @@ export default function MeetingBrief() {
       setBrief(result.reply || result.brief || JSON.stringify(result, null, 2));
       if (result.doc_url) setDocUrl(result.doc_url);
     } catch (e) {
-      setError("Sage couldn't reach the live backend. If Cloud Run just restarted, wait 30-40 seconds and try again.");
+      setError(
+        formatApiError(
+          e,
+          "Sage couldn't reach the live backend. If Cloud Run just restarted, wait 30-40 seconds and try again."
+        )
+      );
       // Show fallback brief
       setBrief(`# Meeting Brief: ${ev.title}\n\n**Attendees:** ${(ev.attendees || []).join(", ") || "N/A"}\n\n## What to expect\nSage will pull relevant emails, Drive files, and open tasks related to this meeting. Start the backend server to see live context.\n\n## Open Action Items\n- [ ] Review agenda\n- [ ] Check related emails from last 30 days\n- [ ] Confirm attendee availability`);
     } finally {

@@ -18,6 +18,10 @@ from googleapiclient.discovery import build
 from sage.config.settings import get_settings
 
 settings = get_settings()
+WORKSPACE_AUTH_ERROR = (
+    "Workspace OAuth is not configured for this deployed environment. "
+    "Provide a valid token.json or switch the app to a non-interactive auth flow."
+)
 
 
 def get_credentials() -> Credentials:
@@ -40,6 +44,9 @@ def get_credentials() -> Credentials:
 
 def _run_oauth_flow() -> Credentials:
     """Launch the browser-based OAuth consent flow using the downloaded credentials file."""
+    if settings.is_production:
+        raise RuntimeError(WORKSPACE_AUTH_ERROR)
+
     creds_path = Path(settings.google_credentials_file)
     if creds_path.exists():
         # Preferred: load directly from the downloaded client_secret.json

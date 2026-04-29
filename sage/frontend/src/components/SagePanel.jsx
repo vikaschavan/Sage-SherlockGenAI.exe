@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Sparkles, Send, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { formatApiError } from "../api/sage";
 
 export default function SagePanel({ title = "Sage AI", onAsk, proactive = [] }) {
   const [input, setInput] = useState("");
@@ -23,12 +24,15 @@ export default function SagePanel({ title = "Sage AI", onAsk, proactive = [] }) 
       if (result?.reply) {
         setMessages((m) => [...m, { role: "sage", text: result.reply }]);
       }
-    } catch {
+    } catch (error) {
       setMessages((m) => [
         ...m,
         {
           role: "sage",
-          text: "I couldn't reach the Sage backend. If the service just restarted, give it 30-40 seconds to warm up and try again.",
+          text: formatApiError(
+            error,
+            "I couldn't reach the Sage backend. If the service just restarted, give it 30-40 seconds to warm up and try again."
+          ),
         },
       ]);
     } finally {

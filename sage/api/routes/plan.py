@@ -10,6 +10,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from sage.api.adk_runtime import get_adk_components, get_session_service
+from sage.api.error_handling import raise_api_http_exception
 from sage.agents.runtime import get_root_agent
 
 router = APIRouter(prefix="/plan", tags=["plan"])
@@ -77,6 +78,7 @@ async def plan_week(request: PlanRequest) -> PlanResponse:
 
         return PlanResponse(reply=reply_text, session_id=request.session_id)
 
+    except HTTPException:
+        raise
     except Exception as e:
-        import traceback
-        raise HTTPException(status_code=500, detail=traceback.format_exc())
+        raise_api_http_exception(e)

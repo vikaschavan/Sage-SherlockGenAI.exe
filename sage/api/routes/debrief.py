@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import AliasChoices, BaseModel, Field
 
 from sage.api.adk_runtime import get_adk_components, get_session_service
+from sage.api.error_handling import raise_api_http_exception
 from sage.agents.runtime import get_root_agent
 
 router = APIRouter(prefix="/debrief", tags=["debrief"])
@@ -93,5 +94,7 @@ async def run_debrief(request: DebriefRequest) -> DebriefResponse:
 
         return DebriefResponse(reply=reply_text, session_id=request.session_id)
 
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise_api_http_exception(e)
