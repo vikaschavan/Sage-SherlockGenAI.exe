@@ -242,14 +242,14 @@ Never bake credentials into container images. Store them in GCP Secret Manager:
 
 ```bash
 # Google API Key
-echo -n "AIzaSyD5jhZ_PXbkYjalhcEhXzgI2uyoKhLIVzM" | \
+echo -n "<your-gemini-api-key>" | \
   gcloud secrets create GOOGLE_API_KEY --data-file=-
 
 # OAuth client secret
-gcloud secrets create GOOGLE_CLIENT_SECRET --data-file=sage/auth/client_secret.json
+gcloud secrets create GOOGLE_CLIENT_SECRET_JSON --data-file=sage/auth/client_secret.json
 
 # OAuth token (pre-authorised token.json from local run)
-gcloud secrets create GOOGLE_TOKEN --data-file=sage/token.json
+gcloud secrets create GOOGLE_TOKEN_JSON --data-file=sage/token.json
 
 # API secret key
 echo -n "4f5990e6f34f2fbd57b52895ed3f07ccb3df23d0350faf90e26a6eccb39bcb22" | \
@@ -326,7 +326,9 @@ The `token.json` stored in Secret Manager will be mounted at runtime. Update `sa
 ```python
 # In settings.py, the google_token_file field already exists:
 google_token_file: str = "token.json"
-# On Cloud Run, set GOOGLE_TOKEN_FILE=/secrets/token/token.json
+# On Cloud Run, set:
+# GOOGLE_TOKEN_FILE=/secrets/google-token/token.json
+# GOOGLE_CREDENTIALS_FILE=/secrets/google-client/client_secret.json
 ```
 
 ---
@@ -360,22 +362,12 @@ gcloud run deploy sage-api \
   --memory 2Gi \
   --cpu 2 \
   --timeout 300 \
-  --set-env-vars "GOOGLE_GENAI_USE_VERTEXAI=false,USE_SQLITE=true,ENV=production" \
+  --set-env-vars "GOOGLE_GENAI_USE_VERTEXAI=false,USE_SQLITE=true,ENV=production,GOOGLE_TOKEN_FILE=/secrets/google-token/token.json,GOOGLE_CREDENTIALS_FILE=/secrets/google-client/client_secret.json" \
   --set-secrets "GOOGLE_API_KEY=GOOGLE_API_KEY:latest" \
-  --set-secrets "API_SECRET_KEY=API_SECRET_KEY:latest"
+  --update-secrets "/secrets/google-token/token.json=GOOGLE_TOKEN_JSON:latest,/secrets/google-client/client_secret.json=GOOGLE_CLIENT_SECRET_JSON:latest"
 ```
 
-**Note on OAuth token**: Cloud Run can't run a browser flow. Before deploying, copy your local `token.json` to Secret Manager and mount it:
-
-```bash
-# Upload your pre-authorised token
-gcloud secrets create GOOGLE_TOKEN_JSON \
-  --data-file=sage/token.json
-
-# Add to the deploy command above:
-# --set-secrets "GOOGLE_TOKEN_JSON=GOOGLE_TOKEN_JSON:latest"
-# Then set GOOGLE_TOKEN_FILE=/secrets/GOOGLE_TOKEN_JSON/value in the app
-```
+**Note on OAuth token**: Cloud Run can't run a browser flow. The deployed service must read a pre-authorised `token.json` and `client_secret.json` from Secret Manager-mounted files. These secret mounts are read-only, so refreshed OAuth tokens are cached under `/tmp` at runtime.
 
 After deploy, GCP prints:
 ```

@@ -19,6 +19,5 @@ frontend/.vite
 # Tests
 tests/
 
-# NOTE: token.json and auth/client_secret.json are intentionally included
-# for the hackathon demo so Cloud Run can authenticate with Google Workspace APIs.
-# In production, use Secret Manager volumes instead.
+token.json
+auth/client_secret.json

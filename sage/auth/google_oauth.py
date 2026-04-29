@@ -6,7 +6,6 @@ Usage:
     service = build_service("calendar", "v3", creds)
 """
 
-import json
 import os
 from pathlib import Path
 
@@ -22,12 +21,13 @@ WORKSPACE_AUTH_ERROR = (
     "Workspace OAuth is not configured for this deployed environment. "
     "Provide a valid token.json or switch the app to a non-interactive auth flow."
 )
+TOKEN_CACHE_PATH = Path("/tmp/sage-google-token.json")
 
 
 def get_credentials() -> Credentials:
     """Load credentials from token file, refreshing or re-authorising as needed."""
     creds: Credentials | None = None
-    token_path = Path(settings.google_token_file)
+    token_path = _get_token_load_path()
 
     if token_path.exists():
         creds = Credentials.from_authorized_user_file(str(token_path), settings.google_scopes)
@@ -40,6 +40,28 @@ def get_credentials() -> Credentials:
         _save_token(creds, token_path)
 
     return creds
+
+
+def _get_token_load_path() -> Path:
+    """Prefer a writable runtime cache, falling back to the configured token file."""
+    configured_path = Path(settings.google_token_file)
+    if TOKEN_CACHE_PATH.exists():
+        return TOKEN_CACHE_PATH
+    return configured_path
+
+
+def _get_token_save_path(configured_path: Path) -> Path:
+    """Avoid rewriting read-only secret mounts in Cloud Run."""
+    if _is_writable_path(configured_path):
+        return configured_path
+    return TOKEN_CACHE_PATH
+
+
+def _is_writable_path(path: Path) -> bool:
+    if path.exists():
+        return os.access(path, os.W_OK)
+    parent = path.parent if str(path.parent) else Path(".")
+    return parent.exists() and os.access(parent, os.W_OK)
 
 
 def _run_oauth_flow() -> Credentials:
@@ -67,7 +89,9 @@ def _run_oauth_flow() -> Credentials:
 
 
 def _save_token(creds: Credentials, path: Path) -> None:
-    path.write_text(creds.to_json())
+    save_path = _get_token_save_path(path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    save_path.write_text(creds.to_json())
 
 
 def build_service(service_name: str, version: str, credentials: Credentials | None = None):
