@@ -6,24 +6,20 @@ meeting brief Google Doc with relevant emails, Drive files, and notes.
 """
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai import types as genai_types
-
-from sage.agents.orchestrator import root_agent
+from sage.api.adk_runtime import get_adk_components, get_session_service
+from sage.agents.runtime import get_root_agent
 
 router = APIRouter(prefix="/brief", tags=["brief"])
 
-_session_service = InMemorySessionService()
 _APP_NAME = "sage"
 
 
 class BriefRequest(BaseModel):
     event_title: str
     event_date: str          # YYYY-MM-DD
-    attendees: list[str] = []
+    attendees: list[str] = Field(default_factory=list)
     user_id: str = "default_user"
     session_id: str = "brief_session"
 
@@ -46,19 +42,21 @@ async def generate_brief(request: BriefRequest) -> BriefResponse:
         }
     """
     try:
+        Runner, _, genai_types = get_adk_components()
+        session_service = get_session_service()
         runner = Runner(
-            agent=root_agent,
+            agent=get_root_agent(),
             app_name=_APP_NAME,
-            session_service=_session_service,
+            session_service=session_service,
         )
 
-        existing = await _session_service.get_session(
+        existing = await session_service.get_session(
             app_name=_APP_NAME,
             user_id=request.user_id,
             session_id=request.session_id,
         )
         if existing is None:
-            await _session_service.create_session(
+            await session_service.create_session(
                 app_name=_APP_NAME,
                 user_id=request.user_id,
                 session_id=request.session_id,

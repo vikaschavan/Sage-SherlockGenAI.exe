@@ -24,7 +24,13 @@ export default function SagePanel({ title = "Sage AI", onAsk, proactive = [] }) 
         setMessages((m) => [...m, { role: "sage", text: result.reply }]);
       }
     } catch {
-      setMessages((m) => [...m, { role: "sage", text: "Sorry, I couldn't connect to the backend. Make sure the server is running on port 8000." }]);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "sage",
+          text: "I couldn't reach the Sage backend. If the service just restarted, give it 30-40 seconds to warm up and try again.",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -37,7 +43,10 @@ export default function SagePanel({ title = "Sage AI", onAsk, proactive = [] }) 
         <div className="w-7 h-7 rounded-lg bg-violet-600 flex items-center justify-center">
           <Sparkles size={14} className="text-white" />
         </div>
-        <span className="font-semibold text-white text-sm">{title}</span>
+        <div>
+          <span className="font-semibold text-white text-sm block">{title}</span>
+          <span className="text-[11px] text-stone-500">First AI reply can take ~30s after cold start.</span>
+        </div>
         <span className="ml-auto text-xs text-violet-400 bg-violet-900/40 px-2 py-0.5 rounded-full">AI</span>
       </div>
 

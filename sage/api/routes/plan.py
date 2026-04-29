@@ -9,15 +9,11 @@ actions taken (calendar blocks created, doc URL).
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from sage.agents.orchestrator import root_agent
-from sage.db.session import get_session
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai import types as genai_types
+from sage.api.adk_runtime import get_adk_components, get_session_service
+from sage.agents.runtime import get_root_agent
 
 router = APIRouter(prefix="/plan", tags=["plan"])
 
-_session_service = InMemorySessionService()
 _APP_NAME = "sage"
 
 
@@ -44,20 +40,22 @@ async def plan_week(request: PlanRequest) -> PlanResponse:
         }
     """
     try:
+        Runner, _, genai_types = get_adk_components()
+        session_service = get_session_service()
         runner = Runner(
-            agent=root_agent,
+            agent=get_root_agent(),
             app_name=_APP_NAME,
-            session_service=_session_service,
+            session_service=session_service,
         )
 
         # Ensure session exists
-        existing = await _session_service.get_session(
+        existing = await session_service.get_session(
             app_name=_APP_NAME,
             user_id=request.user_id,
             session_id=request.session_id,
         )
         if existing is None:
-            await _session_service.create_session(
+            await session_service.create_session(
                 app_name=_APP_NAME,
                 user_id=request.user_id,
                 session_id=request.session_id,

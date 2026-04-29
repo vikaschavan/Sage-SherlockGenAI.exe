@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import os
 from pathlib import Path
 
@@ -9,12 +11,14 @@ from fastapi.staticfiles import StaticFiles
 from sage.api.routes.brief import router as brief_router
 from sage.api.routes.debrief import router as debrief_router
 from sage.api.routes.plan import router as plan_router
+from sage.agents.runtime import warm_root_agent
 from sage.config.settings import get_settings
 from sage.db.session import init_db
 from sage.tools.knowledge_tools import seed_knowledge_from_notes
 from sage.tools.task_tools import seed_mock_tasks
 
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Sage",
@@ -35,11 +39,28 @@ if settings.google_api_key:
     os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "false"
 
 
+def _log_warmup_result(task: asyncio.Task) -> None:
+    try:
+        task.result()
+    except Exception:
+        logger.exception("Sage agent warmup failed")
+
+
 @app.on_event("startup")
 async def startup():
     await init_db()
     seed_mock_tasks()
     seed_knowledge_from_notes()
+    warmup_task = asyncio.create_task(asyncio.to_thread(warm_root_agent))
+    warmup_task.add_done_callback(_log_warmup_result)
+    app.state.agent_warmup_task = warmup_task
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    warmup_task = getattr(app.state, "agent_warmup_task", None)
+    if warmup_task and not warmup_task.done():
+        warmup_task.cancel()
 
 
 @app.get("/health", tags=["system"])

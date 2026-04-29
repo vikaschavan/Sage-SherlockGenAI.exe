@@ -26,7 +26,7 @@ export default function MeetingBrief() {
       setBrief(result.reply || result.brief || JSON.stringify(result, null, 2));
       if (result.doc_url) setDocUrl(result.doc_url);
     } catch (e) {
-      setError("Couldn't connect to backend. Make sure the server is running on port 8000.");
+      setError("Sage couldn't reach the live backend. If Cloud Run just restarted, wait 30-40 seconds and try again.");
       // Show fallback brief
       setBrief(`# Meeting Brief: ${ev.title}\n\n**Attendees:** ${(ev.attendees || []).join(", ") || "N/A"}\n\n## What to expect\nSage will pull relevant emails, Drive files, and open tasks related to this meeting. Start the backend server to see live context.\n\n## Open Action Items\n- [ ] Review agenda\n- [ ] Check related emails from last 30 days\n- [ ] Confirm attendee availability`);
     } finally {
