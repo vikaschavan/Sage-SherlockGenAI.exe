@@ -6,7 +6,9 @@ import MeetingBrief from "./screens/MeetingBrief";
 import Debrief from "./screens/Debrief";
 import Insights from "./screens/Insights";
 import Tasks from "./screens/Tasks";
-import { getBackendHealth } from "./api/sage";
+import { FRONTEND_DEMO_MODE, getBackendHealth, listTasks, updateTaskStatus } from "./api/sage";
+import { todayEvents } from "./data/mockEvents";
+import { mockTasks } from "./data/mockTasks";
 
 const screenTitles = {
   today: "Today",
@@ -26,9 +28,88 @@ const screens = {
   tasks: Tasks,
 };
 
+const ACTIVE_MEETING_KEY = "sage.activeMeeting";
+const defaultMeeting = todayEvents.find((event) => event.type === "meeting") || null;
+
+function readStoredMeeting() {
+  if (typeof window === "undefined") {
+    return defaultMeeting;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(ACTIVE_MEETING_KEY);
+    if (!raw) {
+      return defaultMeeting;
+    }
+    return JSON.parse(raw);
+  } catch {
+    return defaultMeeting;
+  }
+}
+
+function normalizeTaskStatus(status) {
+  if (status === "done") {
+    return "completed";
+  }
+  if (status === "todo") {
+    return "pending";
+  }
+  return status || "pending";
+}
+
+function decorateTasks(tasks) {
+  const activeTasks = [...tasks]
+    .filter((task) => task.status !== "completed")
+    .sort((left, right) => {
+      const priorityRank = { high: 0, medium: 1, low: 2 };
+      const priorityDiff = (priorityRank[left.priority] ?? 3) - (priorityRank[right.priority] ?? 3);
+      if (priorityDiff !== 0) {
+        return priorityDiff;
+      }
+      return (left.due_date || "9999-99-99").localeCompare(right.due_date || "9999-99-99");
+    });
+  const focusIds = new Set(activeTasks.slice(0, 3).map((task) => String(task.id)));
+  const frogId = activeTasks[0] ? String(activeTasks[0].id) : null;
+
+  return tasks.map((task) => ({
+    ...task,
+    id: String(task.id),
+    isMIT: task.isMIT ?? focusIds.has(String(task.id)),
+    isFrog: task.isFrog ?? String(task.id) === frogId,
+  }));
+}
+
+function normalizeTask(task) {
+  return {
+    ...task,
+    id: String(task.id),
+    status: normalizeTaskStatus(task.status),
+    due_date: task.due_date ? task.due_date.slice(0, 10) : "",
+  };
+}
+
+function mapFrontendStatusToBackend(status) {
+  if (status === "completed") {
+    return "done";
+  }
+  if (status === "pending") {
+    return "todo";
+  }
+  return status || "todo";
+}
+
 export default function App() {
   const [active, setActive] = useState("today");
-  const [backendStatus, setBackendStatus] = useState("checking");
+  const [backendInfo, setBackendInfo] = useState({
+    status: "checking",
+    demo_mode: FRONTEND_DEMO_MODE,
+    demo_use_live_enrichment: false,
+  });
+  const [tasks, setTasks] = useState(() => mockTasks.map((task) => ({ ...task })));
+  const [taskDraft, setTaskDraft] = useState(null);
+  const [meetingNoteDraft, setMeetingNoteDraft] = useState(null);
+  const [workflowNotice, setWorkflowNotice] = useState(null);
+  const [activeMeeting, setActiveMeetingState] = useState(readStoredMeeting);
   const Screen = screens[active] || Today;
 
   useEffect(() => {
@@ -36,13 +117,20 @@ export default function App() {
 
     async function checkBackend() {
       try {
-        await getBackendHealth();
+        const health = await getBackendHealth();
         if (!cancelled) {
-          setBackendStatus("live");
+          setBackendInfo({
+            status: "live",
+            demo_mode: Boolean(health?.demo_mode),
+            demo_use_live_enrichment: Boolean(health?.demo_use_live_enrichment),
+          });
         }
       } catch {
         if (!cancelled) {
-          setBackendStatus("offline");
+          setBackendInfo((prev) => ({
+            ...prev,
+            status: "offline",
+          }));
         }
       }
     }
@@ -56,26 +144,93 @@ export default function App() {
     };
   }, []);
 
-  const backendBadge = {
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTasks() {
+      try {
+        const result = await listTasks();
+        if (cancelled || !Array.isArray(result) || result.length === 0) {
+          return;
+        }
+        setTasks(decorateTasks(result.map(normalizeTask)));
+      } catch {
+        if (!cancelled) {
+          setTasks((current) => decorateTasks(current));
+        }
+      }
+    }
+
+    loadTasks();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function setActiveMeeting(meeting) {
+    setActiveMeetingState(meeting);
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    try {
+      if (!meeting) {
+        window.localStorage.removeItem(ACTIVE_MEETING_KEY);
+      } else {
+        window.localStorage.setItem(ACTIVE_MEETING_KEY, JSON.stringify(meeting));
+      }
+    } catch {
+      // Ignore persistence errors and keep in-memory state.
+    }
+  }
+
+  async function handleToggleTask(taskId) {
+    const currentTask = tasks.find((task) => String(task.id) === String(taskId));
+    if (!currentTask) {
+      return;
+    }
+
+    const nextStatus = currentTask.status === "completed" ? "pending" : "completed";
+    setTasks((previous) =>
+      previous.map((task) =>
+        String(task.id) === String(taskId)
+          ? { ...task, status: nextStatus }
+          : task,
+      ),
+    );
+
+    try {
+      await updateTaskStatus(Number(taskId), mapFrontendStatusToBackend(nextStatus));
+    } catch {
+      setTasks((previous) =>
+        previous.map((task) =>
+          String(task.id) === String(taskId)
+            ? { ...task, status: currentTask.status }
+            : task,
+        ),
+      );
+    }
+  }
+
+  const backendBadgeClass = {
     checking: "text-amber-300 bg-amber-500/10 border border-amber-500/20",
     live: "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20",
     offline: "text-rose-300 bg-rose-500/10 border border-rose-500/20",
-  }[backendStatus];
+  }[backendInfo.status];
 
   const backendLabel = {
     checking: "Backend warming",
     live: "Backend live",
     offline: "Backend offline",
-  }[backendStatus];
+  }[backendInfo.status];
 
   return (
     <div className="flex h-screen bg-stone-950 text-white overflow-hidden">
       <Sidebar active={active} onNav={setActive} />
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Top bar */}
         <div className="h-12 shrink-0 border-b border-stone-700 flex items-center px-5 gap-3">
           <h1 className="text-sm font-semibold text-stone-200">{screenTitles[active]}</h1>
-          <span className="text-stone-600">·</span>
+          <span className="text-stone-600">.</span>
           <span className="text-xs text-stone-500">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
@@ -85,21 +240,28 @@ export default function App() {
             })}
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${backendBadge}`}>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${backendBadgeClass}`}>
               {backendLabel}
-            </span>
-            <span className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-              Gemini 2.5 Flash
-            </span>
-            <span className="text-xs text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
-              ADK Multi-Agent
             </span>
           </div>
         </div>
 
-        {/* Screen */}
         <div className="flex flex-1 min-h-0">
-          <Screen />
+          <Screen
+            activeMeeting={activeMeeting}
+            setActiveMeeting={setActiveMeeting}
+            backendInfo={backendInfo}
+            setActiveScreen={setActive}
+            tasks={tasks}
+            setTasks={setTasks}
+            onToggleTask={handleToggleTask}
+            taskDraft={taskDraft}
+            setTaskDraft={setTaskDraft}
+            meetingNoteDraft={meetingNoteDraft}
+            setMeetingNoteDraft={setMeetingNoteDraft}
+            workflowNotice={workflowNotice}
+            setWorkflowNotice={setWorkflowNotice}
+          />
         </div>
       </div>
     </div>

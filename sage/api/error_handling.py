@@ -5,6 +5,12 @@ def raise_api_http_exception(error: Exception) -> None:
     detail = str(error)
     status_code = getattr(error, "status_code", None)
 
+    if isinstance(error, TimeoutError):
+        raise HTTPException(
+            status_code=504,
+            detail="Sage timed out while waiting for the AI workflow. Retry the request or use cached meeting context.",
+        )
+
     if status_code == 429 or "RESOURCE_EXHAUSTED" in detail or "Quota exceeded" in detail:
         raise HTTPException(
             status_code=429,
@@ -28,6 +34,12 @@ def raise_api_http_exception(error: Exception) -> None:
                 "Workspace integrations are not configured for Cloud Run. "
                 "Upload a valid token.json for the deployed service or use service-account based access."
             ),
+        )
+
+    if isinstance(error, KeyError):
+        raise HTTPException(
+            status_code=502,
+            detail="Sage received incomplete tool data while building the response. A cached or mock fallback should be used instead.",
         )
 
     raise HTTPException(status_code=500, detail=detail)

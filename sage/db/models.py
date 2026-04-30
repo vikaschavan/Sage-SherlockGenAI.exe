@@ -5,6 +5,7 @@ Tables:
   - tasks         : user tasks with priority + status
   - knowledge     : embedded notes/email snippets for vector search
   - agent_sessions: conversation state per user session
+  - meeting_workspaces: persisted brief / notes / debrief state per meeting
 """
 
 from datetime import datetime
@@ -104,6 +105,30 @@ class AgentSession(Base):
     session_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
     user_id: Mapped[str] = mapped_column(String(256), nullable=False)
     context_json: Mapped[str | None] = mapped_column(Text)  # JSON blob
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class MeetingWorkspace(Base):
+    """Persists meeting-centric workflow state across brief and debrief flows."""
+
+    __tablename__ = "meeting_workspaces"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    meeting_id: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    event_title: Mapped[str] = mapped_column(String(512), nullable=False)
+    event_date: Mapped[str] = mapped_column(String(32), nullable=False)
+    attendees_json: Mapped[str] = mapped_column(Text, default="[]")
+    notes_draft: Mapped[str | None] = mapped_column(Text)
+    brief_markdown: Mapped[str | None] = mapped_column(Text)
+    brief_doc_url: Mapped[str | None] = mapped_column(String(1024))
+    debrief_markdown: Mapped[str | None] = mapped_column(Text)
+    debrief_doc_url: Mapped[str | None] = mapped_column(String(1024))
+    action_items_json: Mapped[str | None] = mapped_column(Text)
+    source_mode: Mapped[str] = mapped_column(String(32), default="mock")
+    last_error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()

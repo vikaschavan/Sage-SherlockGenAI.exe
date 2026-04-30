@@ -10,6 +10,7 @@ export default defineConfig({
       '/plan':    'http://localhost:8001',
       '/brief':   'http://localhost:8001',
       '/debrief': 'http://localhost:8001',
+      '/meeting-workspace': 'http://localhost:8001',
       '/health':  'http://localhost:8001',
     },
   },

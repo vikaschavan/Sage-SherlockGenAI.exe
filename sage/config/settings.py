@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     google_cloud_project: str = ""
     google_cloud_location: str = "us-central1"
     gemini_model: str = "gemini-2.5-pro"
+    ai_request_timeout_seconds: int = 45
+    google_api_retry_attempts: int = 2
+    google_api_retry_delay_seconds: float = 1.0
 
     # Google OAuth (Workspace APIs)
     google_client_id: str = ""
@@ -45,6 +48,8 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     api_secret_key: str = "change-me-in-production"
+    demo_mode: bool = True
+    demo_use_live_enrichment: bool = False
 
     # Environment
     env: str = "local"

@@ -6,8 +6,22 @@ Google Chat messages as proactive notifications.
 """
 
 from datetime import datetime
+import time
 
 from sage.auth.google_oauth import docs_service, gmail_service
+from sage.config.settings import get_settings
+
+settings = get_settings()
+
+
+def _execute_with_retry(request_builder):
+    for attempt in range(settings.google_api_retry_attempts + 1):
+        try:
+            return request_builder().execute()
+        except Exception:
+            if attempt >= settings.google_api_retry_attempts:
+                raise
+            time.sleep(settings.google_api_retry_delay_seconds)
 
 
 # ---------------------------------------------------------------------------
@@ -28,7 +42,7 @@ def create_doc(title: str, body_markdown: str) -> dict:
     service = docs_service()
 
     # Create empty doc
-    doc = service.documents().create(body={"title": title}).execute()
+    doc = _execute_with_retry(lambda: service.documents().create(body={"title": title}))
     doc_id = doc["documentId"]
 
     # Insert content
@@ -40,9 +54,12 @@ def create_doc(title: str, body_markdown: str) -> dict:
             }
         }
     ]
-    service.documents().batchUpdate(
-        documentId=doc_id, body={"requests": requests}
-    ).execute()
+    _execute_with_retry(
+        lambda: service.documents().batchUpdate(
+            documentId=doc_id,
+            body={"requests": requests},
+        )
+    )
 
     return {
         "doc_id": doc_id,
@@ -82,9 +99,9 @@ def send_email_summary(
     message["subject"] = subject
 
     raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
-    sent = service.users().messages().send(
-        userId="me", body={"raw": raw}
-    ).execute()
+    sent = _execute_with_retry(
+        lambda: service.users().messages().send(userId="me", body={"raw": raw})
+    )
 
     return {"message_id": sent["id"], "status": "sent", "to": recipients}
 

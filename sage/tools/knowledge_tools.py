@@ -8,14 +8,18 @@ vector search is not available (local dev mode).
 
 import asyncio
 import re
+import time
 from base64 import urlsafe_b64decode
 from typing import Optional
 
 from sqlalchemy import select
 
 from sage.auth.google_oauth import drive_service, gmail_service
+from sage.config.settings import get_settings
 from sage.db.models import KnowledgeChunk
 from sage.db.session import get_session
+
+settings = get_settings()
 
 
 def _run(coro):
@@ -26,6 +30,18 @@ def _run(coro):
             return pool.submit(asyncio.run, coro).result()
     except RuntimeError:
         return asyncio.run(coro)
+
+
+def _execute_with_retry(request_builder, operation_name: str):
+    last_error = None
+    for attempt in range(settings.google_api_retry_attempts + 1):
+        try:
+            return request_builder().execute()
+        except Exception as error:
+            last_error = error
+            if attempt >= settings.google_api_retry_attempts:
+                raise
+            time.sleep(settings.google_api_retry_delay_seconds)
 
 
 # ---------------------------------------------------------------------------
@@ -44,16 +60,24 @@ def search_gmail(query: str, max_results: int = 5) -> list[dict]:
         List of dicts with thread_id, subject, snippet, date, from_email.
     """
     service = gmail_service()
-    results = service.users().messages().list(
-        userId="me", q=query, maxResults=max_results
-    ).execute()
+    results = _execute_with_retry(
+        lambda: service.users().messages().list(
+            userId="me", q=query, maxResults=max_results
+        ),
+        "gmail_list",
+    )
 
     messages = []
     for msg_ref in results.get("messages", []):
-        msg = service.users().messages().get(
-            userId="me", id=msg_ref["id"], format="metadata",
-            metadataHeaders=["Subject", "From", "Date"]
-        ).execute()
+        msg = _execute_with_retry(
+            lambda msg_id=msg_ref["id"]: service.users().messages().get(
+                userId="me",
+                id=msg_id,
+                format="metadata",
+                metadataHeaders=["Subject", "From", "Date"],
+            ),
+            "gmail_get",
+        )
 
         headers = {h["name"]: h["value"] for h in msg.get("payload", {}).get("headers", [])}
         messages.append({
@@ -79,9 +103,10 @@ def get_gmail_thread_body(thread_id: str) -> str:
         Combined plain-text body of all messages in the thread.
     """
     service = gmail_service()
-    thread = service.users().threads().get(
-        userId="me", id=thread_id, format="full"
-    ).execute()
+    thread = _execute_with_retry(
+        lambda: service.users().threads().get(userId="me", id=thread_id, format="full"),
+        "gmail_thread",
+    )
 
     texts = []
     for message in thread.get("messages", []):
@@ -122,12 +147,16 @@ def search_drive(query: str, max_results: int = 5) -> list[dict]:
         List of dicts with file_id, name, mime_type, web_view_link, modified_time.
     """
     service = drive_service()
-    results = service.files().list(
-        q=f"fullText contains '{query}' and trashed=false",
-        pageSize=max_results,
-        fields="files(id, name, mimeType, webViewLink, modifiedTime)",
-        orderBy="modifiedTime desc",
-    ).execute()
+    escaped_query = query.replace("'", "\\'")
+    results = _execute_with_retry(
+        lambda: service.files().list(
+            q=f"fullText contains '{escaped_query}' and trashed=false",
+            pageSize=max_results,
+            fields="files(id, name, mimeType, webViewLink, modifiedTime)",
+            orderBy="modifiedTime desc",
+        ),
+        "drive_search",
+    )
 
     return [
         {

@@ -1,29 +1,30 @@
 """
-POST /debrief  — Post-meeting debrief endpoint.
-
-Accepts meeting notes/transcript text, extracts action items into tasks,
-blocks follow-up time on calendar, and emails a summary to attendees.
+POST /debrief - Post-meeting debrief endpoint.
 """
 
-from fastapi import APIRouter, HTTPException
+from __future__ import annotations
+
+import logging
+import re
+
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import AliasChoices, BaseModel, Field
 
-from sage.api.adk_runtime import get_adk_components, get_session_service
-from sage.api.error_handling import raise_api_http_exception
-from sage.agents.runtime import get_root_agent
+from sage.config.settings import get_settings
+from sage.services.agent_runner import run_agent_message
+from sage.services.demo_data import get_demo_workspace_payload
+from sage.services.meeting_workspace import get_workspace, update_workspace
 
 router = APIRouter(prefix="/debrief", tags=["debrief"])
-
-_APP_NAME = "sage"
+logger = logging.getLogger(__name__)
+settings = get_settings()
 
 
 class DebriefRequest(BaseModel):
     event_title: str
-    meeting_notes: str = Field(
-        validation_alias=AliasChoices("meeting_notes", "notes")
-    )
+    meeting_notes: str = Field(validation_alias=AliasChoices("meeting_notes", "notes"))
     attendees: list[str] = Field(default_factory=list)
-    event_date: str = ""     # YYYY-MM-DD, used to schedule follow-up blocks
+    event_date: str = ""
     user_id: str = "default_user"
     session_id: str = "debrief_session"
 
@@ -31,70 +32,139 @@ class DebriefRequest(BaseModel):
 class DebriefResponse(BaseModel):
     reply: str
     session_id: str
+    meeting_id: str
+    doc_url: str | None = None
+    cached: bool = False
+    mode: str = "live"
+    notes_state: str = ""
+    request_id: str | None = None
+
+
+def _extract_doc_url(text: str) -> str | None:
+    match = re.search(r"https://docs\.google\.com/document/d/[^\s)]+", text)
+    return match.group(0) if match else None
+
+
+def _build_debrief_message(payload: DebriefRequest) -> str:
+    attendee_str = ", ".join(payload.attendees) if payload.attendees else "no attendees"
+    return (
+        f"Run an executive post-meeting debrief for '{payload.event_title}' on {payload.event_date}.\n\n"
+        f"Attendees: {attendee_str}\n\n"
+        f"Meeting notes:\n{payload.meeting_notes}\n\n"
+        "Return a structured summary with: decisions made, action items, owners, due dates, executive risks, "
+        "and a follow-up email draft. Then create a summary Google Doc and email the summary to attendees."
+    )
 
 
 @router.post("", response_model=DebriefResponse)
-async def run_debrief(request: DebriefRequest) -> DebriefResponse:
-    """
-    Run the post-meeting debrief pipeline.
+async def run_debrief(request: Request, payload: DebriefRequest) -> DebriefResponse:
+    request_id = getattr(request.state, "request_id", None)
+    workspace = await get_workspace(
+        payload.event_title,
+        payload.event_date,
+        payload.attendees,
+        seed_demo_payload=settings.demo_mode and not settings.demo_use_live_enrichment,
+    )
 
-    Example request body:
-        {
-          "event_title": "Client Call - Apex Solutions",
-          "meeting_notes": "Discussed SSO requirements...",
-          "attendees": ["james@apex.com", "linda@apex.com"],
-          "event_date": "2026-04-10"
-        }
-    """
+    workspace = await update_workspace(
+        payload.event_title,
+        payload.event_date,
+        payload.attendees,
+        notes_draft=payload.meeting_notes,
+    )
+
+    demo_payload = get_demo_workspace_payload(
+        payload.event_title,
+        payload.event_date,
+        payload.attendees,
+    )
+
+    if settings.demo_mode and not settings.demo_use_live_enrichment:
+        workspace = await update_workspace(
+            payload.event_title,
+            payload.event_date,
+            payload.attendees,
+            debrief_markdown=demo_payload["debrief_markdown"],
+            action_items=demo_payload.get("action_items", []),
+            source_mode="mock",
+            last_error=None,
+        )
+        return DebriefResponse(
+            reply=workspace["debrief"],
+            session_id=payload.session_id,
+            meeting_id=workspace["meeting_id"],
+            doc_url=workspace["debrief_doc_url"],
+            cached=False,
+            mode="mock",
+            notes_state=workspace["notes_draft"],
+            request_id=request_id,
+        )
+
+    if workspace["debrief"] and workspace["notes_draft"] == payload.meeting_notes:
+        return DebriefResponse(
+            reply=workspace["debrief"],
+            session_id=payload.session_id,
+            meeting_id=workspace["meeting_id"],
+            doc_url=workspace["debrief_doc_url"],
+            cached=True,
+            mode=workspace["source_mode"],
+            notes_state=workspace["notes_draft"],
+            request_id=request_id,
+        )
+
     try:
-        Runner, _, genai_types = get_adk_components()
-        session_service = get_session_service()
-        runner = Runner(
-            agent=get_root_agent(),
-            app_name=_APP_NAME,
-            session_service=session_service,
+        reply_text = await run_agent_message(
+            message=_build_debrief_message(payload),
+            user_id=payload.user_id,
+            session_id=payload.session_id,
+            request_id=request_id or "debrief",
         )
-
-        existing = await session_service.get_session(
-            app_name=_APP_NAME,
-            user_id=request.user_id,
-            session_id=request.session_id,
+        doc_url = _extract_doc_url(reply_text)
+        workspace = await update_workspace(
+            payload.event_title,
+            payload.event_date,
+            payload.attendees,
+            debrief_markdown=reply_text,
+            debrief_doc_url=doc_url,
+            source_mode="live",
+            last_error=None,
         )
-        if existing is None:
-            await session_service.create_session(
-                app_name=_APP_NAME,
-                user_id=request.user_id,
-                session_id=request.session_id,
-            )
-
-        attendee_str = ", ".join(request.attendees) if request.attendees else "no attendees"
-        message = (
-            f"Run post-meeting debrief for '{request.event_title}' on {request.event_date}.\n\n"
-            f"Attendees: {attendee_str}\n\n"
-            f"Meeting notes:\n{request.meeting_notes}\n\n"
-            f"Please: (1) extract all action items and create tasks, "
-            f"(2) block follow-up time on the calendar for high-priority items, "
-            f"(3) create a summary Google Doc, "
-            f"(4) email the summary to attendees."
+        return DebriefResponse(
+            reply=reply_text,
+            session_id=payload.session_id,
+            meeting_id=workspace["meeting_id"],
+            doc_url=doc_url,
+            cached=False,
+            mode="live",
+            notes_state=workspace["notes_draft"],
+            request_id=request_id,
         )
-
-        content = genai_types.Content(
-            role="user",
-            parts=[genai_types.Part(text=message)],
-        )
-
-        reply_text = ""
-        async for event in runner.run_async(
-            user_id=request.user_id,
-            session_id=request.session_id,
-            new_message=content,
-        ):
-            if event.is_final_response() and event.content and event.content.parts:
-                reply_text = event.content.parts[0].text
-
-        return DebriefResponse(reply=reply_text, session_id=request.session_id)
 
     except HTTPException:
         raise
-    except Exception as e:
-        raise_api_http_exception(e)
+    except Exception as error:
+        logger.exception(
+            "debrief_failed request_id=%s meeting_id=%s event_title=%s",
+            request_id,
+            workspace["meeting_id"],
+            payload.event_title,
+        )
+        workspace = await update_workspace(
+            payload.event_title,
+            payload.event_date,
+            payload.attendees,
+            debrief_markdown=workspace.get("debrief") or demo_payload["debrief_markdown"],
+            action_items=demo_payload.get("action_items", []),
+            source_mode="partial",
+            last_error=str(error),
+        )
+        return DebriefResponse(
+            reply=workspace["debrief"],
+            session_id=payload.session_id,
+            meeting_id=workspace["meeting_id"],
+            doc_url=workspace["debrief_doc_url"],
+            cached=bool(workspace["has_cached_debrief"]),
+            mode="partial",
+            notes_state=workspace["notes_draft"],
+            request_id=request_id,
+        )
