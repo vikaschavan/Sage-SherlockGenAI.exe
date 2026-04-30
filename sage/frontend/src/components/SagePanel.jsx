@@ -31,7 +31,7 @@ export default function SagePanel({ title = "Sage AI", onAsk, proactive = [] }) 
           role: "sage",
           text: formatApiError(
             error,
-            "I couldn't reach the Sage backend. If the service just restarted, give it 30-40 seconds to warm up and try again."
+            "Sage couldn't reach the live backend. If Cloud Run just restarted, wait 30-40 seconds and try again."
           ),
         },
       ]);

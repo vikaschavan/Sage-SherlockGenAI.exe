@@ -55,7 +55,7 @@ export default function Debrief() {
         )
       );
       setResult({
-        reply: `## Debrief: ${selectedMeeting.title}\n\n### Action Items Extracted\n- [ ] Alice: Send revised timeline to stakeholders (due Apr 10)\n- [ ] Bob: Lead CloudOps negotiation call (due Apr 8)\n- [ ] Carol: Onboard Priya Sharma (due Apr 12)\n- [ ] Team: Move weekly standup to async Slack\n\n### Follow-up Email Draft\nHi team,\n\nThanks for a productive session. Here are the key decisions and next steps from today's Product Review...\n\n### Calendar Blocks Suggested\n- Block 1hr Thursday for Auth PR review\n- Block 30min Friday for stakeholder follow-up\n\n### Summary Doc\nCreated in Google Docs (backend required for live link)`,
+        reply: `## Debrief: ${selectedMeeting.title}\n\n### Action Items Extracted\n- [ ] Alice: Send revised timeline to stakeholders (due Apr 10)\n- [ ] Bob: Lead CloudOps negotiation call (due Apr 8)\n- [ ] Carol: Onboard Priya Sharma (due Apr 12)\n- [ ] Team: Move weekly standup to async Slack\n\n### Follow-up Email Draft\nHi team,\n\nThanks for a productive session. Here are the key decisions and next steps from today's Product Review...\n\n### Calendar Blocks Suggested\n- Block 1hr Thursday for Auth PR review\n- Block 30min Friday for stakeholder follow-up\n\n### Summary Doc\nA live Google Docs link will appear here when the AI request succeeds.`,
       });
     } finally {
       setLoading(false);

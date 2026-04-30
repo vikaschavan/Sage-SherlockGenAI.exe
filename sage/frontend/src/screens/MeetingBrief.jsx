@@ -33,7 +33,7 @@ export default function MeetingBrief() {
         )
       );
       // Show fallback brief
-      setBrief(`# Meeting Brief: ${ev.title}\n\n**Attendees:** ${(ev.attendees || []).join(", ") || "N/A"}\n\n## What to expect\nSage will pull relevant emails, Drive files, and open tasks related to this meeting. Start the backend server to see live context.\n\n## Open Action Items\n- [ ] Review agenda\n- [ ] Check related emails from last 30 days\n- [ ] Confirm attendee availability`);
+      setBrief(`# Meeting Brief: ${ev.title}\n\n**Attendees:** ${(ev.attendees || []).join(", ") || "N/A"}\n\n## What to expect\nSage will pull relevant emails, Drive files, and open tasks related to this meeting when the live AI request succeeds.\n\n## Open Action Items\n- [ ] Review agenda\n- [ ] Check related emails from last 30 days\n- [ ] Confirm attendee availability`);
     } finally {
       setLoading(false);
     }
