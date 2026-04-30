@@ -176,9 +176,13 @@ def format_meeting_brief(
     Returns:
         Formatted markdown string for a Google Doc brief.
     """
+    title = event.get("title") or event.get("summary") or "Meeting"
+    start = event.get("start") or event.get("start_datetime") or event.get("event_date") or "TBD"
+    end = event.get("end") or event.get("end_datetime") or "TBD"
+
     lines = [
-        f"# Meeting Brief: {event['title']}",
-        f"**Time:** {event['start']} → {event['end']}",
+        f"# Meeting Brief: {title}",
+        f"**Time:** {start} → {end}",
     ]
     if event.get("attendees"):
         lines.append(f"**Attendees:** {', '.join(event['attendees'])}")
@@ -194,20 +198,27 @@ def format_meeting_brief(
     if relevant_emails:
         lines.append("## Related Email Threads")
         for email in relevant_emails[:3]:
-            lines.append(f"- **{email['subject']}** from {email['from_email']} ({email['date']})")
-            lines.append(f"  > {email['snippet']}")
+            subject = email.get("subject", "(No subject)")
+            sender = email.get("from_email", "")
+            date = email.get("date", "")
+            snippet = email.get("snippet", "")
+            lines.append(f"- **{subject}** from {sender} ({date})")
+            lines.append(f"  > {snippet}")
         lines.append("")
 
     if relevant_files:
         lines.append("## Related Drive Files")
         for f in relevant_files[:3]:
-            lines.append(f"- [{f['name']}]({f['web_view_link']}) — modified {f['modified_time']}")
+            name = f.get("name", "Untitled file")
+            link = f.get("web_view_link", "")
+            modified_time = f.get("modified_time", "")
+            lines.append(f"- [{name}]({link}) — modified {modified_time}")
         lines.append("")
 
     if linked_tasks:
         lines.append("## Open Action Items")
         for t in linked_tasks:
             due = f" (due {t['due_date']})" if t.get("due_date") else ""
-            lines.append(f"- [ ] {t['title']}{due}")
+            lines.append(f"- [ ] {t.get('title', 'Untitled task')}{due}")
 
     return "\n".join(lines)
