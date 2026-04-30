@@ -5,6 +5,7 @@ import {
   FileText,
   BarChart2,
   CheckSquare,
+  ExternalLink,
 } from "lucide-react";
 import sageMark from "../assets/sage-mark.svg";
 
@@ -41,6 +42,20 @@ export default function Sidebar({ active, onNav }) {
           </span>
         </button>
       ))}
+
+      <a
+        href="https://www.linkedin.com/in/mevikaschavan/"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Built by Vikas Chavan"
+        className="mt-auto group relative w-10 h-10 rounded-xl border border-[rgba(251,247,240,0.16)] bg-[rgba(251,247,240,0.08)] text-white flex items-center justify-center hover:bg-[rgba(251,247,240,0.14)] transition-colors"
+      >
+        <span className="text-[11px] font-semibold tracking-[0.18em]">VC</span>
+        <ExternalLink size={10} className="absolute right-1.5 bottom-1.5 text-[rgba(248,243,234,0.7)]" />
+        <span className="sage-sidebar-tooltip absolute left-14 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-50">
+          Built by Vikas Chavan
+        </span>
+      </a>
     </div>
   );
 }

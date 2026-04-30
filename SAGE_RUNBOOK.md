@@ -3,6 +3,8 @@
 > **Audience**: Hackathon demo day + GCP Cloud Run deployment  
 > **Stack**: Python 3.11 · Google ADK · Gemini 2.5 Flash · FastAPI · React + Vite · SQLite (local) / AlloyDB (GCP)
 
+> **Maintainer**: Vikas Chavan - https://www.linkedin.com/in/mevikaschavan/
+
 ---
 
 ## 1. How the System Works
