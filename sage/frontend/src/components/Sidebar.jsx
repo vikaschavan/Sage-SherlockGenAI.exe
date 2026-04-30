@@ -5,8 +5,8 @@ import {
   FileText,
   BarChart2,
   CheckSquare,
-  Sparkles,
 } from "lucide-react";
+import sageMark from "../assets/sage-mark.svg";
 
 const nav = [
   { id: "today", icon: Sun, label: "Today" },
@@ -21,9 +21,7 @@ export default function Sidebar({ active, onNav }) {
   return (
     <div className="sage-sidebar w-16 flex flex-col items-center border-r py-4 gap-1 shrink-0">
       {/* Logo */}
-      <div className="w-10 h-10 rounded-xl bg-[var(--sage-accent)] flex items-center justify-center mb-4 shadow-sm">
-        <Sparkles size={18} className="text-white" />
-      </div>
+      <img src={sageMark} alt="Sage" className="w-10 h-10 mb-4 drop-shadow-sm" />
 
       {nav.map(({ id, icon: Icon, label }) => (
         <button
