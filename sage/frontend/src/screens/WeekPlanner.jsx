@@ -6,11 +6,31 @@ import { mockTasks } from "../data/mockTasks";
 import { planWeek } from "../api/sage";
 
 const themeConfig = {
-  strategy: { label: "Strategy", color: "border-cyan-500/40 bg-cyan-500/5", badge: "bg-cyan-500/10 text-cyan-300" },
-  "deep-work": { label: "Deep Work", color: "border-emerald-500/40 bg-emerald-500/5", badge: "bg-emerald-500/10 text-emerald-300" },
-  communication: { label: "Comms", color: "border-amber-500/40 bg-amber-500/5", badge: "bg-amber-500/10 text-amber-300" },
-  operations: { label: "Ops", color: "border-violet-500/40 bg-violet-500/5", badge: "bg-violet-500/10 text-violet-300" },
-  review: { label: "Review", color: "border-stone-500/40 bg-stone-700/30", badge: "bg-stone-700/50 text-stone-300" },
+  strategy: {
+    label: "Strategy",
+    color: "border-[color:rgba(15,118,110,0.2)] bg-[var(--sage-accent-soft)]",
+    badge: "bg-[rgba(251,247,240,0.8)] text-[var(--sage-accent)] border border-[color:rgba(15,118,110,0.14)]",
+  },
+  "deep-work": {
+    label: "Deep Work",
+    color: "border-[color:rgba(47,125,101,0.2)] bg-[var(--sage-emerald-soft)]",
+    badge: "bg-[rgba(251,247,240,0.8)] text-[var(--sage-emerald)] border border-[color:rgba(47,125,101,0.14)]",
+  },
+  communication: {
+    label: "Comms",
+    color: "border-[color:rgba(161,98,7,0.2)] bg-[var(--sage-amber-soft)]",
+    badge: "bg-[rgba(251,247,240,0.8)] text-[var(--sage-amber)] border border-[color:rgba(161,98,7,0.14)]",
+  },
+  operations: {
+    label: "Ops",
+    color: "border-[var(--sage-border)] bg-[var(--sage-surface-muted)]",
+    badge: "bg-[rgba(251,247,240,0.8)] text-[var(--sage-text)] border border-[var(--sage-border)]",
+  },
+  review: {
+    label: "Review",
+    color: "border-[var(--sage-border)] bg-[rgba(251,247,240,0.75)]",
+    badge: "bg-[var(--sage-surface-muted)] text-[var(--sage-muted)] border border-[var(--sage-border)]",
+  },
 };
 
 const totalMeetingHours = weekEvents.reduce((sum, day) => sum + (day.meetingHours || 0), 0);
@@ -18,7 +38,9 @@ const totalFocusHours = weekEvents.reduce((sum, day) => sum + (day.focusHours ||
 const deepWorkPct = Math.round((totalFocusHours / (totalMeetingHours + totalFocusHours)) * 100);
 
 function findWeekMeeting(title) {
-  return weekEvents.flatMap((day) => day.events).find((event) => event.type === "meeting" && event.title === title) || null;
+  return weekEvents
+    .flatMap((day) => day.events)
+    .find((event) => event.type === "meeting" && event.title === title) || null;
 }
 
 export default function WeekPlanner({
@@ -66,49 +88,81 @@ export default function WeekPlanner({
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         <div className="grid grid-cols-4 gap-3">
           {[
-            { label: "Strategic Time", value: `${deepWorkPct}%`, sub: "target >40%", good: deepWorkPct >= 40, icon: Focus },
-            { label: "Meeting Load", value: `${totalMeetingHours.toFixed(1)}h`, sub: "target <12h", good: totalMeetingHours < 12, icon: Calendar },
-            { label: "Open Priorities", value: highCount, sub: "high priority", good: highCount < 3, icon: TrendingUp },
-            { label: "Conflicts", value: weekEvents.filter((day) => day.conflict).length, sub: "schedule clashes", good: false, icon: AlertTriangle },
+            {
+              label: "Strategic Time",
+              value: `${deepWorkPct}%`,
+              sub: "target >40%",
+              good: deepWorkPct >= 40,
+              icon: Focus,
+            },
+            {
+              label: "Meeting Load",
+              value: `${totalMeetingHours.toFixed(1)}h`,
+              sub: "target <12h",
+              good: totalMeetingHours < 12,
+              icon: Calendar,
+            },
+            {
+              label: "Open Priorities",
+              value: highCount,
+              sub: "high priority",
+              good: highCount < 3,
+              icon: TrendingUp,
+            },
+            {
+              label: "Conflicts",
+              value: weekEvents.filter((day) => day.conflict).length,
+              sub: "schedule clashes",
+              good: false,
+              icon: AlertTriangle,
+            },
           ].map(({ label, value, sub, good, icon: Icon }) => (
-            <div key={label} className="rounded-xl bg-stone-800 border border-stone-700 p-3">
+            <div key={label} className="sage-card rounded-2xl p-3">
               <div className="flex items-center gap-2 mb-1">
-                <Icon size={14} className={good ? "text-emerald-400" : "text-amber-400"} />
-                <span className="text-xs text-stone-400">{label}</span>
+                <Icon size={14} className={good ? "text-[var(--sage-emerald)]" : "text-[var(--sage-amber)]"} />
+                <span className="text-xs text-[var(--sage-muted)]">{label}</span>
               </div>
-              <p className={`text-xl font-bold ${good ? "text-emerald-400" : "text-amber-400"}`}>{value}</p>
-              <p className="text-xs text-stone-500">{sub}</p>
+              <p className={`text-xl font-bold ${good ? "text-[var(--sage-emerald)]" : "text-[var(--sage-amber)]"}`}>
+                {value}
+              </p>
+              <p className="text-xs text-[var(--sage-soft)]">{sub}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-xs text-stone-500 flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" /> Day themes reduce context switching and make executive time easier to protect.
+        <p className="text-xs text-[var(--sage-muted)] flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-[var(--sage-accent)] inline-block" /> Day themes reduce context
+          switching and make executive time easier to protect.
         </p>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+        <div className="sage-surface rounded-2xl p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Weekly action path</p>
-              <p className="text-sm text-stone-500 mt-1">
+              <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                Weekly action path
+              </p>
+              <p className="text-sm text-[var(--sage-muted)] mt-1">
                 The week planner should route into execution, not stay as a read-only calendar.
               </p>
             </div>
             <button
               onClick={() => openWorkflow("today")}
-              className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+              className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             >
               Open Today
             </button>
           </div>
           <div className="mt-4 grid grid-cols-3 gap-3">
             {weeklyActions.map((item) => (
-              <div key={item.title} className="rounded-lg bg-stone-900/70 border border-stone-700 px-4 py-4">
-                <p className="text-xs font-semibold text-cyan-200">{item.title}</p>
-                <p className="text-sm text-stone-400 mt-2 min-h-12">{item.detail}</p>
+              <div
+                key={item.title}
+                className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] px-4 py-4"
+              >
+                <p className="text-xs font-semibold text-[var(--sage-accent)]">{item.title}</p>
+                <p className="text-sm text-[var(--sage-muted)] mt-2 min-h-12 leading-6">{item.detail}</p>
                 <button
                   onClick={item.action}
-                  className="mt-4 px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition-colors"
+                  className="sage-btn-primary mt-4 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   {item.actionLabel}
                 </button>
@@ -120,32 +174,25 @@ export default function WeekPlanner({
         <div className="grid grid-cols-5 gap-3">
           {weekEvents.map((day) => {
             const theme = themeConfig[day.theme] || themeConfig.review;
-            const dayAction =
-              day.conflict
-                ? {
-                    label: "Review priorities",
-                    action: () => openWorkflow("tasks"),
-                  }
-                : day.events.some((event) => event.title === "Apex Client Call")
-                  ? {
-                      label: "Open Apex brief",
-                      action: () => openWorkflow("brief", apexMeeting),
-                    }
-                  : day.events.some((event) => event.title === "Product Review")
-                    ? {
-                        label: "Open debrief",
-                        action: () => openWorkflow("debrief", productReviewMeeting),
-                      }
-                    : {
-                        label: "Open Today",
-                        action: () => openWorkflow("today"),
-                      };
+            const dayAction = day.conflict
+              ? { label: "Review priorities", action: () => openWorkflow("tasks") }
+              : day.events.some((event) => event.title === "Apex Client Call")
+                ? { label: "Open Apex brief", action: () => openWorkflow("brief", apexMeeting) }
+                : day.events.some((event) => event.title === "Product Review")
+                  ? { label: "Open debrief", action: () => openWorkflow("debrief", productReviewMeeting) }
+                  : { label: "Open Today", action: () => openWorkflow("today") };
+
             return (
-              <div key={day.date} className={`rounded-xl border p-3 space-y-2 ${theme.color} ${day.conflict ? "ring-1 ring-amber-500/40" : ""}`}>
+              <div
+                key={day.date}
+                className={`rounded-2xl border p-3 space-y-2 ${theme.color} ${
+                  day.conflict ? "ring-1 ring-[color:rgba(161,98,7,0.22)]" : ""
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-bold text-white">{day.label}</p>
-                    <p className="text-xs text-stone-500">{day.date}</p>
+                    <p className="text-sm font-bold text-[var(--sage-text)]">{day.label}</p>
+                    <p className="text-xs text-[var(--sage-muted)]">{day.date}</p>
                   </div>
                   <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${theme.badge}`}>
                     {theme.label}
@@ -153,7 +200,7 @@ export default function WeekPlanner({
                 </div>
 
                 {day.conflict && (
-                  <div className="flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 rounded px-2 py-1">
+                  <div className="flex items-center gap-1 text-xs text-[var(--sage-amber)] bg-[rgba(251,247,240,0.72)] rounded px-2 py-1 border border-[color:rgba(161,98,7,0.16)]">
                     <AlertTriangle size={10} />
                     Conflict detected
                   </div>
@@ -163,15 +210,19 @@ export default function WeekPlanner({
                   {day.events.slice(0, 4).map((event) => (
                     <div
                       key={event.id}
-                      className={`rounded-lg px-2 py-1.5 text-xs ${
+                      className={`rounded-lg px-2 py-1.5 text-xs border ${
                         event.type === "focus"
-                          ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
-                          : "bg-stone-700/50 text-stone-300"
+                          ? "bg-[rgba(251,247,240,0.72)] text-[var(--sage-emerald)] border-[color:rgba(47,125,101,0.16)]"
+                          : "bg-[rgba(251,247,240,0.62)] text-[var(--sage-text)] border-[var(--sage-border)]"
                       }`}
                     >
                       <p className="font-medium truncate">{event.title}</p>
                       {event.duration_min && (
-                        <p className={`text-xs mt-0.5 ${event.duration_min > 60 ? "text-amber-400" : "text-stone-500"}`}>
+                        <p
+                          className={`text-xs mt-0.5 ${
+                            event.duration_min > 60 ? "text-[var(--sage-amber)]" : "text-[var(--sage-muted)]"
+                          }`}
+                        >
                           {event.duration_min} min{event.duration_min > 60 ? " attention-heavy" : ""}
                         </p>
                       )}
@@ -179,13 +230,13 @@ export default function WeekPlanner({
                   ))}
                 </div>
 
-                <div className="pt-1 border-t border-stone-700/50 flex justify-between text-xs text-stone-500">
-                  <span className="text-emerald-400/70">{day.focusHours}h focus</span>
-                  <span className="text-cyan-400/70">{day.meetingHours}h meetings</span>
+                <div className="pt-1 border-t border-[rgba(186,168,143,0.45)] flex justify-between text-xs text-[var(--sage-muted)]">
+                  <span className="text-[var(--sage-emerald)]">{day.focusHours}h focus</span>
+                  <span className="text-[var(--sage-accent)]">{day.meetingHours}h meetings</span>
                 </div>
                 <button
                   onClick={dayAction.action}
-                  className="w-full rounded-lg bg-stone-900/70 hover:bg-stone-900 border border-stone-700 text-stone-200 text-xs font-medium px-3 py-2 transition-colors"
+                  className="sage-btn-secondary w-full rounded-lg text-xs font-medium px-3 py-2 transition-colors"
                 >
                   {dayAction.label}
                 </button>
@@ -194,16 +245,23 @@ export default function WeekPlanner({
           })}
         </div>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-          <h3 className="text-sm font-semibold text-stone-300 mb-3">High Priority This Week</h3>
+        <div className="sage-surface rounded-2xl p-4">
+          <h3 className="text-sm font-semibold text-[var(--sage-text)] mb-3">High Priority This Week</h3>
           <div className="grid grid-cols-2 gap-2">
-            {weekTasks.filter((task) => task.priority === "high").map((task) => (
-              <div key={task.id} className="flex items-center gap-2 text-xs text-stone-300 bg-stone-700/40 rounded-lg px-3 py-2">
-                <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
-                <span className="truncate">{task.title}</span>
-                {task.due_date && <span className="ml-auto text-stone-500 shrink-0">{task.due_date.slice(5)}</span>}
-              </div>
-            ))}
+            {weekTasks
+              .filter((task) => task.priority === "high")
+              .map((task) => (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-2 text-xs text-[var(--sage-text)] bg-[rgba(251,247,240,0.72)] border border-[var(--sage-border)] rounded-xl px-3 py-2"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[var(--sage-rose)] shrink-0" />
+                  <span className="truncate">{task.title}</span>
+                  {task.due_date && (
+                    <span className="ml-auto text-[var(--sage-muted)] shrink-0">{task.due_date.slice(5)}</span>
+                  )}
+                </div>
+              ))}
           </div>
         </div>
       </div>

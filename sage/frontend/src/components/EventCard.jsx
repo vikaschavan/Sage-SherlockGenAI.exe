@@ -1,9 +1,9 @@
-import { Users, MapPin, AlertTriangle, ArrowRightLeft, Lock } from "lucide-react";
+import { Users, AlertTriangle, ArrowRightLeft, Lock } from "lucide-react";
 
 const typeStyles = {
-  focus: "border-emerald-500/40 bg-emerald-500/5 text-emerald-300",
-  break: "border-stone-600 bg-stone-700/30 text-stone-400",
-  meeting: "border-indigo-500/40 bg-indigo-500/5 text-stone-200",
+  focus: "border-[color:rgba(47,125,101,0.22)] bg-[var(--sage-emerald-soft)] text-[var(--sage-emerald)]",
+  break: "border-[var(--sage-border)] bg-[var(--sage-surface-muted)] text-[var(--sage-muted)]",
+  meeting: "border-[color:rgba(15,118,110,0.2)] bg-[var(--sage-accent-soft)] text-[var(--sage-text)]",
 };
 
 function formatTime(iso) {
@@ -24,32 +24,39 @@ export default function EventCard({ event, protected: isProtected }) {
     <div className={`rounded-lg border px-3 py-2 text-sm ${style}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          {isProtected && <Lock size={11} className="text-indigo-400 shrink-0" />}
+          {isProtected && <Lock size={11} className="text-[var(--sage-accent)] shrink-0" />}
           <span className="font-medium truncate">{event.title}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isLong && (
-            <span title="Musk standard: try 25 or 50 min" className="flex items-center gap-0.5 text-amber-400 text-xs">
+            <span
+              title="Musk standard: try 25 or 50 min"
+              className="flex items-center gap-0.5 text-[var(--sage-amber)] text-xs"
+            >
               <AlertTriangle size={11} /> {event.duration_min}m
             </span>
           )}
           {isAsync && (
-            <span title="This could be async — consider an email or doc" className="flex items-center gap-0.5 text-violet-400 text-xs">
+            <span
+              title="This could be async - consider an email or doc"
+              className="flex items-center gap-0.5 text-[var(--sage-accent)] text-xs"
+            >
               <ArrowRightLeft size={11} /> Async?
             </span>
           )}
           {!isLong && !isAsync && event.duration_min && (
-            <span className="text-xs text-stone-500">{event.duration_min}m</span>
+            <span className="text-xs text-[var(--sage-muted)]">{event.duration_min}m</span>
           )}
         </div>
       </div>
       {(event.start || event.end) && (
-        <div className="text-xs text-stone-500 mt-0.5">
-          {formatTime(event.start)}{event.end ? ` → ${formatTime(event.end)}` : ""}
+        <div className="text-xs text-[var(--sage-muted)] mt-0.5">
+          {formatTime(event.start)}
+          {event.end ? ` -> ${formatTime(event.end)}` : ""}
         </div>
       )}
       {event.attendees?.length > 0 && (
-        <div className="flex items-center gap-1 mt-1 text-xs text-stone-500">
+        <div className="flex items-center gap-1 mt-1 text-xs text-[var(--sage-muted)]">
           <Users size={10} />
           {event.attendees.slice(0, 3).join(", ")}
           {event.attendees.length > 3 && ` +${event.attendees.length - 3}`}

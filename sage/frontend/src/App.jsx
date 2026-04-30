@@ -213,9 +213,9 @@ export default function App() {
   }
 
   const backendBadgeClass = {
-    checking: "text-amber-300 bg-amber-500/10 border border-amber-500/20",
-    live: "text-emerald-400 bg-emerald-500/10 border border-emerald-500/20",
-    offline: "text-rose-300 bg-rose-500/10 border border-rose-500/20",
+    checking: "text-[var(--sage-amber)] bg-[var(--sage-amber-soft)] border border-[color:rgba(161,98,7,0.18)]",
+    live: "text-[var(--sage-emerald)] bg-[var(--sage-emerald-soft)] border border-[color:rgba(47,125,101,0.18)]",
+    offline: "text-[var(--sage-rose)] bg-[var(--sage-rose-soft)] border border-[color:rgba(180,83,74,0.18)]",
   }[backendInfo.status];
 
   const backendLabel = {
@@ -225,13 +225,16 @@ export default function App() {
   }[backendInfo.status];
 
   return (
-    <div className="flex h-screen bg-stone-950 text-white overflow-hidden">
+    <div className="flex h-screen overflow-hidden text-[var(--sage-text)]">
       <Sidebar active={active} onNav={setActive} />
       <div className="flex flex-col flex-1 min-w-0">
-        <div className="h-12 shrink-0 border-b border-stone-700 flex items-center px-5 gap-3">
-          <h1 className="text-sm font-semibold text-stone-200">{screenTitles[active]}</h1>
-          <span className="text-stone-600">.</span>
-          <span className="text-xs text-stone-500">
+        <div className="sage-topbar h-14 shrink-0 border-b flex items-center px-5 gap-3">
+          <div>
+            <h1 className="text-sm font-semibold text-[var(--sage-text)]">{screenTitles[active]}</h1>
+            <p className="text-[11px] text-[var(--sage-soft)]">Executive operating workspace</p>
+          </div>
+          <span className="text-[var(--sage-border-strong)]">/</span>
+          <span className="text-xs text-[var(--sage-muted)]">
             {new Date().toLocaleDateString("en-US", {
               weekday: "long",
               month: "long",
@@ -240,7 +243,7 @@ export default function App() {
             })}
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <span className={`text-xs px-2 py-0.5 rounded-full ${backendBadgeClass}`}>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${backendBadgeClass}`}>
               {backendLabel}
             </span>
           </div>

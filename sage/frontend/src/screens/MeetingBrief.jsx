@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Users, ExternalLink, Loader2, FileText, ChevronRight, BadgeAlert, RefreshCw } from "lucide-react";
+import {
+  Users,
+  ExternalLink,
+  Loader2,
+  FileText,
+  ChevronRight,
+  BadgeAlert,
+  RefreshCw,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { todayEvents } from "../data/mockEvents";
@@ -28,7 +36,7 @@ function buildExecutivePrompts(eventTitle) {
   ];
 }
 
-export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendInfo }) {
+export default function MeetingBrief({ activeMeeting, setActiveMeeting }) {
   const [selected, setSelected] = useState(activeMeeting || meetings[0] || null);
   const [workspace, setWorkspace] = useState(null);
   const [brief, setBrief] = useState("");
@@ -145,28 +153,30 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
 
   return (
     <div className="flex flex-1 min-h-0">
-      <div className="w-64 shrink-0 border-r border-stone-700 p-4 overflow-y-auto">
-        <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">Today's Meetings</h3>
+      <div className="w-64 shrink-0 border-r border-[var(--sage-border)] bg-[rgba(251,247,240,0.58)] p-4 overflow-y-auto">
+        <h3 className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em] mb-3">
+          Today's Meetings
+        </h3>
         <div className="space-y-2">
           {meetings.map((event) => (
             <button
               key={event.id}
               onClick={() => setSelected(event)}
-              className={`w-full text-left rounded-xl border p-3 transition-all ${
+              className={`w-full text-left rounded-2xl border p-3 transition-all ${
                 selected?.id === event.id
-                  ? "border-cyan-500 bg-cyan-500/10"
-                  : "border-stone-700 bg-stone-800/40 hover:border-stone-600"
+                  ? "border-[color:rgba(15,118,110,0.2)] bg-[var(--sage-accent-soft)]"
+                  : "border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] hover:border-[var(--sage-border-strong)]"
               }`}
             >
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-stone-200 truncate">{event.title}</p>
-                <ChevronRight size={14} className="text-stone-500 shrink-0" />
+                <p className="text-sm font-medium text-[var(--sage-text)] truncate">{event.title}</p>
+                <ChevronRight size={14} className="text-[var(--sage-soft)] shrink-0" />
               </div>
-              <div className="flex items-center gap-1 mt-1 text-xs text-stone-500">
+              <div className="flex items-center gap-1 mt-1 text-xs text-[var(--sage-muted)]">
                 <Users size={10} />
                 {(event.attendees || []).length} attendee{(event.attendees || []).length !== 1 ? "s" : ""}
               </div>
-              <p className="text-xs mt-1 text-stone-500">
+              <p className="text-xs mt-1 text-[var(--sage-muted)]">
                 {new Date(event.start).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
                 {" to "}
                 {new Date(event.end).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
@@ -179,9 +189,11 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
       <div className="flex-1 overflow-y-auto p-6">
         {!selected && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <FileText size={40} className="text-stone-700 mb-3" />
-            <p className="text-stone-400 font-medium">Select a meeting to open its workspace</p>
-            <p className="text-stone-600 text-sm mt-1">Sage will preserve the brief, notes draft, and follow-through state.</p>
+            <FileText size={40} className="text-[var(--sage-border-strong)] mb-3" />
+            <p className="text-[var(--sage-text)] font-medium">Select a meeting to open its workspace</p>
+            <p className="text-[var(--sage-muted)] text-sm mt-1">
+              Sage will preserve the brief, notes draft, and follow-through state.
+            </p>
           </div>
         )}
 
@@ -189,22 +201,22 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
           <div className="space-y-4 max-w-3xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-white">{selected.title}</h2>
-                <div className="flex items-center gap-1 text-sm text-stone-400 mt-0.5">
+                <h2 className="text-lg font-bold text-[var(--sage-text)]">{selected.title}</h2>
+                <div className="flex items-center gap-1 text-sm text-[var(--sage-muted)] mt-0.5">
                   <Users size={13} />
                   {(selected.attendees || []).join(", ") || "No attendees"}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {cached && (
-                  <span className="text-xs px-2 py-1 rounded-full text-stone-300 bg-stone-800 border border-stone-700">
+                  <span className="text-xs px-2 py-1 rounded-full text-[var(--sage-accent)] bg-[var(--sage-accent-soft)] border border-[color:rgba(15,118,110,0.14)]">
                     Brief ready
                   </span>
                 )}
                 <button
                   onClick={() => generateBrief(selected, true)}
                   disabled={loading}
-                  className="flex items-center gap-1.5 text-xs text-stone-300 bg-stone-800 border border-stone-700 px-3 py-1.5 rounded-lg hover:border-stone-600 disabled:opacity-50 transition-colors"
+                  className="sage-btn-secondary flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg disabled:opacity-50 transition-colors"
                 >
                   <RefreshCw size={12} />
                   Refresh brief
@@ -214,7 +226,7 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
                     href={docUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-xs text-cyan-300 bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-lg hover:bg-cyan-500/20 transition-colors"
+                    className="sage-btn-primary flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors"
                   >
                     <ExternalLink size={12} />
                     Open Doc
@@ -224,9 +236,11 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
             </div>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Why it matters</p>
-                <p className="text-sm text-stone-300 mt-2">
+              <div className="sage-card rounded-2xl p-4">
+                <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                  Why it matters
+                </p>
+                <p className="text-sm text-[var(--sage-text)] mt-2 leading-6">
                   {selected.title === "Apex Client Call"
                     ? "Revenue retention, client confidence, and next-step commitments are all exposed here."
                     : selected.title === "Product Review"
@@ -234,60 +248,64 @@ export default function MeetingBrief({ activeMeeting, setActiveMeeting, backendI
                       : "This meeting either protects momentum or consumes executive time without a clear decision."}
                 </p>
               </div>
-              <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Prior notes</p>
-                <p className="text-sm text-stone-300 mt-2">
+              <div className="sage-card rounded-2xl p-4">
+                <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                  Prior notes
+                </p>
+                <p className="text-sm text-[var(--sage-text)] mt-2 leading-6">
                   {workspace?.notes_draft || "No notes saved yet. The debrief screen will persist notes for this meeting."}
                 </p>
               </div>
-              <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Open actions</p>
+              <div className="sage-card rounded-2xl p-4">
+                <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                  Open actions
+                </p>
                 <div className="mt-2 space-y-2">
                   {(workspace?.action_items || []).slice(0, 3).map((item, index) => (
-                    <div key={`${item.title || "action"}-${index}`} className="text-sm text-stone-300">
+                    <div key={`${item.title || "action"}-${index}`} className="text-sm text-[var(--sage-text)]">
                       <p>{item.title || item.owner || "Action item"}</p>
-                      <p className="text-xs text-stone-500">
+                      <p className="text-xs text-[var(--sage-muted)]">
                         {(item.owner && `Owner: ${item.owner}`) || "Owner to confirm"}
                         {item.due_date ? ` | Due ${item.due_date}` : ""}
                       </p>
                     </div>
                   ))}
                   {(!workspace?.action_items || workspace.action_items.length === 0) && (
-                    <p className="text-sm text-stone-500">No extracted actions yet.</p>
+                    <p className="text-sm text-[var(--sage-muted)]">No extracted actions yet.</p>
                   )}
                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 flex items-start gap-2">
+              <div className="text-xs text-[var(--sage-amber)] bg-[var(--sage-amber-soft)] border border-[color:rgba(161,98,7,0.18)] rounded-xl px-3 py-3 flex items-start gap-2">
                 <BadgeAlert size={14} className="shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             {loading && (
-              <div className="flex items-center gap-2 text-cyan-400 text-sm">
+              <div className="flex items-center gap-2 text-[var(--sage-accent)] text-sm">
                 <Loader2 size={16} className="animate-spin" />
                 Sage is assembling the executive meeting brief...
               </div>
             )}
 
-            <div className="rounded-xl bg-stone-800 border border-stone-700 p-5">
+            <div className="sage-surface rounded-2xl p-5">
               {brief ? (
-                <div className="prose prose-invert prose-sm max-w-none prose-headings:text-stone-100 prose-p:text-stone-300 prose-li:text-stone-300 prose-a:text-cyan-300">
+                <div className="prose prose-sm max-w-none prose-headings:text-[var(--sage-text)] prose-p:text-[var(--sage-text)] prose-li:text-[var(--sage-text)] prose-strong:text-[var(--sage-text)] prose-a:text-[var(--sage-accent)]">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{brief}</ReactMarkdown>
                 </div>
               ) : (
                 <div className="text-center py-10">
-                  <p className="text-stone-400 font-medium">No brief generated yet</p>
-                  <p className="text-sm text-stone-600 mt-1">
+                  <p className="text-[var(--sage-text)] font-medium">No brief generated yet</p>
+                  <p className="text-sm text-[var(--sage-muted)] mt-1">
                     Generate the brief to capture decisions, risks, prior commitments, and follow-through.
                   </p>
                   <button
                     onClick={() => generateBrief(selected, true)}
                     disabled={loading}
-                    className="mt-4 px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+                    className="sage-btn-primary mt-4 px-4 py-2 rounded-xl disabled:opacity-50 text-sm font-medium transition-colors"
                   >
                     Generate brief
                   </button>

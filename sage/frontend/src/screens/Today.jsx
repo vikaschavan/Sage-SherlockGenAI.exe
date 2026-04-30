@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { AlertCircle, Lock, Plus, Star, ShieldAlert, TrendingUp, CheckCircle2, X } from "lucide-react";
+import {
+  AlertCircle,
+  Lock,
+  Plus,
+  Star,
+  ShieldAlert,
+  TrendingUp,
+  CheckCircle2,
+  X,
+} from "lucide-react";
 import TaskCard from "../components/TaskCard";
 import EventCard from "../components/EventCard";
 import SagePanel from "../components/SagePanel";
@@ -31,7 +40,9 @@ export default function Today({
     .filter((event) => event.type === "focus")
     .reduce((sum, event) => sum + event.duration_min / 60, 0);
   const todayMITs = tasks.filter((task) => task.isMIT || task.isFrog);
-  const overdueTasks = tasks.filter((task) => task.due_date && task.due_date < new Date().toISOString().slice(0, 10));
+  const overdueTasks = tasks.filter(
+    (task) => task.due_date && task.due_date < new Date().toISOString().slice(0, 10),
+  );
   const apexMeeting = findMeetingByTitle("Apex Client Call");
   const productReviewMeeting = findMeetingByTitle("Product Review");
 
@@ -102,19 +113,27 @@ export default function Today({
 
   return (
     <div className="flex flex-1 min-h-0">
-      <div className="w-72 shrink-0 border-r border-stone-700 p-4 overflow-y-auto space-y-2">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Today's Schedule</h3>
-          <span className="text-xs text-stone-500">
-            {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+      <div className="w-72 shrink-0 border-r border-[var(--sage-border)] bg-[rgba(251,247,240,0.58)] p-4 overflow-y-auto space-y-3">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+            Today's Schedule
+          </h3>
+          <span className="text-xs text-[var(--sage-muted)]">
+            {new Date().toLocaleDateString("en-US", {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            })}
           </span>
         </div>
 
-        <div className="rounded-lg border border-cyan-500/40 bg-cyan-500/10 px-3 py-2 flex items-center gap-2">
-          <Lock size={12} className="text-cyan-300 shrink-0" />
+        <div className="rounded-xl border border-[color:rgba(15,118,110,0.2)] bg-[var(--sage-accent-soft)] px-3 py-3 flex items-start gap-2">
+          <Lock size={13} className="text-[var(--sage-accent)] shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-cyan-200">Protected: 7:00-8:30 AM</p>
-            <p className="text-xs text-cyan-300/70">Strategic focus. No meetings should displace this slot.</p>
+            <p className="text-xs font-semibold text-[var(--sage-accent)]">Protected: 7:00-8:30 AM</p>
+            <p className="text-xs text-[var(--sage-muted)] mt-1">
+              Strategic focus. No meetings should displace this slot.
+            </p>
           </div>
         </div>
 
@@ -122,22 +141,22 @@ export default function Today({
           <EventCard key={event.id} event={event} />
         ))}
 
-        <div className="mt-4 rounded-xl bg-stone-800 border border-stone-700 p-3 space-y-2">
+        <div className="sage-card rounded-xl p-3 space-y-2">
           <div className="flex justify-between text-xs">
-            <span className="text-stone-400">Meeting load</span>
-            <span className={meetingLoad > 4 ? "text-amber-400 font-semibold" : "text-stone-300"}>
+            <span className="text-[var(--sage-muted)]">Meeting load</span>
+            <span className={meetingLoad > 4 ? "text-[var(--sage-amber)] font-semibold" : "text-[var(--sage-text)]"}>
               {meetingLoad.toFixed(1)}h
             </span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-stone-400">Deep work</span>
-            <span className={focusHours >= 2 ? "text-emerald-400 font-semibold" : "text-amber-400"}>
+            <span className="text-[var(--sage-muted)]">Deep work</span>
+            <span className={focusHours >= 2 ? "text-[var(--sage-emerald)] font-semibold" : "text-[var(--sage-amber)]"}>
               {focusHours.toFixed(1)}h
             </span>
           </div>
           <div className="flex justify-between text-xs">
-            <span className="text-stone-400">Open commitments</span>
-            <span className={overdueTasks.length > 0 ? "text-rose-400 font-semibold" : "text-stone-300"}>
+            <span className="text-[var(--sage-muted)]">Open commitments</span>
+            <span className={overdueTasks.length > 0 ? "text-[var(--sage-rose)] font-semibold" : "text-[var(--sage-text)]"}>
               {overdueTasks.length}
             </span>
           </div>
@@ -146,20 +165,20 @@ export default function Today({
 
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
         {workflowNotice?.type === "today_focus_updated" && (
-          <div className="rounded-xl bg-emerald-500/10 border border-emerald-500/20 p-4">
+          <div className="rounded-2xl border border-[color:rgba(47,125,101,0.18)] bg-[var(--sage-emerald-soft)] p-4">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-start gap-3">
-                <CheckCircle2 size={16} className="text-emerald-300 shrink-0 mt-0.5" />
+                <CheckCircle2 size={16} className="text-[var(--sage-emerald)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-emerald-200">Today's focus was updated</p>
-                  <p className="text-sm text-stone-300 mt-1">
-                    The top execution queue from `Tasks` is now driving this screen.
+                  <p className="text-sm font-semibold text-[var(--sage-text)]">Today's focus was updated</p>
+                  <p className="text-sm text-[var(--sage-muted)] mt-1">
+                    The top execution queue from Tasks is now driving this screen.
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {(workflowNotice.tasks || []).map((taskTitle) => (
                       <span
                         key={taskTitle}
-                        className="text-xs px-2 py-1 rounded-full bg-stone-900 border border-stone-700 text-stone-200"
+                        className="text-xs px-2 py-1 rounded-full bg-[rgba(251,247,240,0.85)] border border-[var(--sage-border)] text-[var(--sage-text)]"
                       >
                         {taskTitle}
                       </span>
@@ -169,7 +188,7 @@ export default function Today({
               </div>
               <button
                 onClick={() => setWorkflowNotice?.(null)}
-                className="text-stone-500 hover:text-white transition-colors"
+                className="text-[var(--sage-soft)] hover:text-[var(--sage-text)] transition-colors"
               >
                 <X size={14} />
               </button>
@@ -179,27 +198,29 @@ export default function Today({
 
         <div className="grid grid-cols-3 gap-3">
           {executiveSignals.map(({ icon: Icon, title, detail }) => (
-            <div key={title} className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-              <div className="flex items-center gap-2 text-cyan-300">
+            <div key={title} className="sage-card rounded-2xl p-4">
+              <div className="flex items-center gap-2 text-[var(--sage-accent)]">
                 <Icon size={14} />
-                <span className="text-xs font-semibold uppercase tracking-wider">{title}</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.18em]">{title}</span>
               </div>
-              <p className="text-sm text-stone-300 mt-3">{detail}</p>
+              <p className="text-sm text-[var(--sage-text)] mt-3 leading-6">{detail}</p>
             </div>
           ))}
         </div>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+        <div className="sage-surface rounded-2xl p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Executive operating cadence</p>
-              <p className="text-sm text-stone-500 mt-1">
+              <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                Executive operating cadence
+              </p>
+              <p className="text-sm text-[var(--sage-muted)] mt-1">
                 Tighten focus, prep the key meeting, then close the loop after decisions land.
               </p>
             </div>
             <button
               onClick={() => setActiveScreen?.("tasks")}
-              className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+              className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             >
               Refine priorities
             </button>
@@ -227,12 +248,15 @@ export default function Today({
                 action: () => openMeetingWorkflow("debrief", productReviewMeeting),
               },
             ].map((step) => (
-              <div key={step.title} className="rounded-lg bg-stone-900/70 border border-stone-700 px-4 py-4">
-                <p className="text-xs font-semibold text-cyan-200">{step.title}</p>
-                <p className="text-sm text-stone-400 mt-2 min-h-12">{step.detail}</p>
+              <div
+                key={step.title}
+                className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.7)] px-4 py-4"
+              >
+                <p className="text-xs font-semibold text-[var(--sage-accent)]">{step.title}</p>
+                <p className="text-sm text-[var(--sage-muted)] mt-2 min-h-12 leading-6">{step.detail}</p>
                 <button
                   onClick={step.action}
-                  className="mt-4 px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition-colors"
+                  className="sage-btn-primary mt-4 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   {step.actionLabel}
                 </button>
@@ -243,8 +267,8 @@ export default function Today({
 
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Star size={14} className="text-cyan-400" />
-            <h2 className="text-sm font-semibold text-stone-200">Most Important Tasks Today</h2>
+            <Star size={14} className="text-[var(--sage-accent)]" />
+            <h2 className="text-sm font-semibold text-[var(--sage-text)]">Most Important Tasks Today</h2>
           </div>
           <div className="space-y-2">
             {todayMITs.map((task) => (
@@ -253,54 +277,62 @@ export default function Today({
           </div>
         </div>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-3 flex gap-2">
+        <div className="sage-surface rounded-2xl p-3 flex gap-2">
           <input
             value={capture}
             onChange={(event) => setCapture(event.target.value)}
             placeholder="Capture a risk, task, or follow-up..."
-            className="flex-1 bg-transparent text-sm text-white placeholder-stone-500 focus:outline-none"
+            className="sage-input flex-1 text-sm px-3 py-2 rounded-xl"
           />
           <button
             onClick={() => setCaptureMode(Boolean(capture.trim()))}
-            className="w-8 h-8 rounded-lg bg-stone-700 hover:bg-cyan-600 flex items-center justify-center transition-colors"
+            className="sage-btn-primary w-10 h-10 rounded-xl flex items-center justify-center transition-colors"
           >
             <Plus size={14} className="text-white" />
           </button>
         </div>
         {captureMode && capture.trim() && (
-          <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
-            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Route this capture</p>
-            <p className="text-sm text-stone-300 mt-2">
-              `Today` should capture fast. Choose where this belongs before you move on.
+          <div className="sage-surface rounded-2xl p-4">
+            <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+              Route this capture
+            </p>
+            <p className="text-sm text-[var(--sage-muted)] mt-2">
+              Today should capture fast. Choose where this belongs before you move on.
             </p>
             <div className="mt-4 grid grid-cols-3 gap-3">
-              <div className="rounded-lg bg-stone-900/70 border border-stone-700 px-4 py-4">
-                <p className="text-xs font-semibold text-cyan-200">Create task</p>
-                <p className="text-sm text-stone-400 mt-2">Send this into the execution system for full tracking and prioritization.</p>
+              <div className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] px-4 py-4">
+                <p className="text-xs font-semibold text-[var(--sage-accent)]">Create task</p>
+                <p className="text-sm text-[var(--sage-muted)] mt-2 leading-6">
+                  Send this into the execution system for full tracking and prioritization.
+                </p>
                 <button
                   onClick={() => openTaskCapture("medium")}
-                  className="mt-4 px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition-colors"
+                  className="sage-btn-primary mt-4 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   Open in Tasks
                 </button>
               </div>
-              <div className="rounded-lg bg-stone-900/70 border border-stone-700 px-4 py-4">
-                <p className="text-xs font-semibold text-cyan-200">Attach to meeting</p>
-                <p className="text-sm text-stone-400 mt-2">Add it to the active meeting notes so the debrief picks it up with the rest of the conversation.</p>
+              <div className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] px-4 py-4">
+                <p className="text-xs font-semibold text-[var(--sage-accent)]">Attach to meeting</p>
+                <p className="text-sm text-[var(--sage-muted)] mt-2 leading-6">
+                  Add it to the active meeting notes so the debrief picks it up with the rest of the conversation.
+                </p>
                 <button
                   onClick={routeToMeetingNotes}
                   disabled={!activeMeeting}
-                  className="mt-4 px-3 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 disabled:opacity-40 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+                  className="sage-btn-secondary mt-4 px-3 py-2 rounded-lg disabled:opacity-40 text-xs font-medium transition-colors"
                 >
                   {activeMeeting ? "Open debrief" : "Select a meeting first"}
                 </button>
               </div>
-              <div className="rounded-lg bg-stone-900/70 border border-stone-700 px-4 py-4">
-                <p className="text-xs font-semibold text-cyan-200">Flag as risk</p>
-                <p className="text-sm text-stone-400 mt-2">Escalate it into the task system as a high-priority item that should show up in execution planning.</p>
+              <div className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] px-4 py-4">
+                <p className="text-xs font-semibold text-[var(--sage-accent)]">Flag as risk</p>
+                <p className="text-sm text-[var(--sage-muted)] mt-2 leading-6">
+                  Escalate it into the task system as a high-priority item that should show up in execution planning.
+                </p>
                 <button
                   onClick={() => openTaskCapture("high", "Risk: ")}
-                  className="mt-4 px-3 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+                  className="sage-btn-secondary mt-4 px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   Send as high priority
                 </button>
@@ -308,16 +340,20 @@ export default function Today({
             </div>
           </div>
         )}
-        <p className="text-xs text-stone-600 -mt-4 ml-1">
+        <p className="text-xs text-[var(--sage-soft)] -mt-4 ml-1">
           Capture first, then route it into the right meeting or task workflow.
         </p>
 
         <div>
-          <h3 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-3">All Tasks</h3>
+          <h3 className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em] mb-3">
+            All Tasks
+          </h3>
           <div className="space-y-2">
-            {tasks.filter((task) => !task.isMIT && !task.isFrog).map((task) => (
-              <TaskCard key={task.id} task={task} compact onToggle={onToggleTask} />
-            ))}
+            {tasks
+              .filter((task) => !task.isMIT && !task.isFrog)
+              .map((task) => (
+                <TaskCard key={task.id} task={task} compact onToggle={onToggleTask} />
+              ))}
           </div>
         </div>
       </div>

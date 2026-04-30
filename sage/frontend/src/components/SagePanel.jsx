@@ -58,27 +58,27 @@ export default function SagePanel({
   }
 
   return (
-    <div className="w-96 shrink-0 flex flex-col bg-stone-900 border-l border-stone-700">
-      <div className="px-4 py-3 border-b border-stone-700 flex items-center gap-2">
-        <div className="w-7 h-7 rounded-lg bg-cyan-600 flex items-center justify-center">
+    <div className="w-96 shrink-0 flex flex-col sage-surface-muted border-l border-[var(--sage-border)]">
+      <div className="px-4 py-3 border-b border-[var(--sage-border)] flex items-center gap-2 bg-[rgba(251,247,240,0.72)]">
+        <div className="w-7 h-7 rounded-lg bg-[var(--sage-accent)] flex items-center justify-center">
           <Sparkles size={14} className="text-white" />
         </div>
         <div>
-          <span className="font-semibold text-white text-sm block">{title}</span>
-          <span className="text-[11px] text-stone-500">First AI reply can take about 30 seconds after a cold start.</span>
+          <span className="font-semibold text-[var(--sage-text)] text-sm block">{title}</span>
+          <span className="text-[11px] text-[var(--sage-muted)]">First AI reply can take about 30 seconds after a cold start.</span>
         </div>
-        <span className="ml-auto text-xs text-cyan-300 bg-cyan-900/40 px-2 py-0.5 rounded-full">AI</span>
+        <span className="ml-auto text-xs text-[var(--sage-accent)] bg-[var(--sage-accent-soft)] px-2 py-0.5 rounded-full border border-[color:rgba(15,118,110,0.12)]">AI</span>
       </div>
 
       {contextLabel && (
-        <div className="px-4 py-2 border-b border-stone-800 text-xs text-stone-400 bg-stone-900/70">
+        <div className="px-4 py-2 border-b border-[var(--sage-border)] text-xs text-[var(--sage-muted)] bg-[rgba(243,236,225,0.88)]">
           {contextLabel}
         </div>
       )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
         {messages.length === 0 && (
-          <p className="text-stone-500 text-xs text-center mt-8">
+          <p className="text-[var(--sage-soft)] text-xs text-center mt-8">
             Ask Sage about your priorities, meetings, blockers, or follow-through.
           </p>
         )}
@@ -87,12 +87,12 @@ export default function SagePanel({
             key={index}
             className={`rounded-xl p-3 text-sm ${
               message.role === "user"
-                ? "bg-cyan-600/20 text-cyan-100 ml-4"
-                : "bg-stone-800 text-stone-200 mr-2"
+                ? "bg-[var(--sage-accent-soft)] text-[var(--sage-text)] ml-4 border border-[color:rgba(15,118,110,0.16)]"
+                : "bg-[rgba(251,247,240,0.92)] text-[var(--sage-text)] mr-2 border border-[var(--sage-border)]"
             }`}
           >
             {message.role === "sage" ? (
-              <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-li:my-0.5">
+              <div className="prose prose-sm max-w-none prose-p:my-1 prose-li:my-0.5 prose-headings:text-[var(--sage-text)] prose-p:text-[var(--sage-text)] prose-li:text-[var(--sage-text)] prose-strong:text-[var(--sage-text)] prose-a:text-[var(--sage-accent)]">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.text}</ReactMarkdown>
               </div>
             ) : (
@@ -101,19 +101,19 @@ export default function SagePanel({
           </div>
         ))}
         {loading && (
-          <div className="flex items-center gap-2 text-cyan-400 text-xs bg-stone-800 rounded-xl p-3">
+          <div className="flex items-center gap-2 text-[var(--sage-accent)] text-xs bg-[rgba(251,247,240,0.92)] border border-[var(--sage-border)] rounded-xl p-3">
             <Loader2 size={14} className="animate-spin" />
             Sage is thinking...
           </div>
         )}
         {suggestedPrompts.length > 0 && (
           <div className="space-y-2 pt-2">
-            <p className="text-[11px] uppercase tracking-wider text-stone-500">Try asking</p>
+            <p className="text-[11px] uppercase tracking-wider text-[var(--sage-soft)]">Try asking</p>
             {suggestedPrompts.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => usePrompt(prompt)}
-                className="w-full text-left text-xs text-stone-300 bg-stone-800 hover:border-cyan-500/40 border border-stone-700 rounded-lg px-3 py-2 transition-colors"
+                className="w-full text-left text-xs text-[var(--sage-text)] bg-[rgba(251,247,240,0.88)] hover:border-[var(--sage-accent)] border border-[var(--sage-border)] rounded-lg px-3 py-2 transition-colors"
               >
                 {prompt}
               </button>
@@ -122,19 +122,19 @@ export default function SagePanel({
         )}
       </div>
 
-      <div className="p-3 border-t border-stone-700">
+      <div className="p-3 border-t border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)]">
         <div className="flex gap-2">
           <input
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={(event) => event.key === "Enter" && handleSend()}
             placeholder="Ask Sage..."
-            className="flex-1 bg-stone-800 text-white text-sm px-3 py-2 rounded-lg border border-stone-600 focus:outline-none focus:border-cyan-500 placeholder-stone-500"
+            className="sage-input flex-1 text-sm px-3 py-2 rounded-lg"
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="w-9 h-9 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 flex items-center justify-center transition-colors"
+            className="sage-btn-primary w-9 h-9 rounded-lg disabled:opacity-40 flex items-center justify-center transition-colors"
           >
             <Send size={14} className="text-white" />
           </button>

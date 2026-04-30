@@ -31,7 +31,6 @@ export default function Tasks({
   const [taskNotice, setTaskNotice] = useState("");
 
   const projects = [...new Set(tasks.map((task) => task.project).filter(Boolean))];
-
   const today = new Date().toISOString().slice(0, 10);
 
   const filtered = tasks.filter((t) => {
@@ -81,11 +80,13 @@ export default function Tasks({
         .join("\n");
       const result = await planWeek(
         `Prioritize these tasks for me and explain the order:\n${taskList}`,
-        "task-session"
+        "task-session",
       );
       setAiNote(result?.reply || "No response");
     } catch {
-      setAiNote("Sage could not reprioritize live right now. The existing task order is still available for demo and review.");
+      setAiNote(
+        "Sage could not reprioritize live right now. The existing task order is still available for demo and review.",
+      );
     } finally {
       setAiLoading(false);
     }
@@ -110,7 +111,12 @@ export default function Tasks({
       const normalized = {
         ...created,
         id: String(created.id),
-        status: created.status === "done" ? "completed" : created.status === "todo" ? "pending" : created.status,
+        status:
+          created.status === "done"
+            ? "completed"
+            : created.status === "todo"
+              ? "pending"
+              : created.status,
         due_date: created.due_date ? created.due_date.slice(0, 10) : "",
         isMIT: false,
         isFrog: false,
@@ -207,29 +213,36 @@ export default function Tasks({
 
   return (
     <div className="flex flex-1 min-h-0">
-      {/* Filter sidebar */}
-      <div className="w-56 shrink-0 border-r border-stone-700 p-4 space-y-4 overflow-y-auto">
+      <div className="w-56 shrink-0 border-r border-[var(--sage-border)] bg-[rgba(251,247,240,0.58)] p-4 space-y-5 overflow-y-auto">
         <div>
-          <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Priority</p>
+          <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em] mb-2">
+            Priority
+          </p>
           <div className="space-y-1">
             {filters.map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
-                className={`w-full text-left px-3 py-1.5 rounded-lg text-sm flex items-center justify-between transition-colors ${
+                className={`w-full text-left px-3 py-2 rounded-xl text-sm flex items-center justify-between transition-colors ${
                   filter === f
-                    ? "bg-teal-600/20 text-teal-300"
-                    : "text-stone-400 hover:bg-stone-800"
+                    ? "bg-[var(--sage-accent-soft)] text-[var(--sage-accent)] border border-[color:rgba(15,118,110,0.18)]"
+                    : "text-[var(--sage-muted)] hover:bg-[rgba(251,247,240,0.8)] border border-transparent"
                 }`}
               >
                 <span className="capitalize">{f}</span>
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  f === "high" ? "bg-rose-500/20 text-rose-400" :
-                  f === "medium" ? "bg-amber-500/20 text-amber-400" :
-                  f === "low" ? "bg-emerald-500/20 text-emerald-400" :
-                  f === "overdue" ? "bg-red-500/20 text-red-400" :
-                  "bg-stone-700 text-stone-400"
-                }`}>
+                <span
+                  className={`text-xs px-1.5 py-0.5 rounded-full ${
+                    f === "high"
+                      ? "bg-[var(--sage-rose-soft)] text-[var(--sage-rose)]"
+                      : f === "medium"
+                        ? "bg-[var(--sage-amber-soft)] text-[var(--sage-amber)]"
+                        : f === "low"
+                          ? "bg-[var(--sage-emerald-soft)] text-[var(--sage-emerald)]"
+                          : f === "overdue"
+                            ? "bg-[var(--sage-rose-soft)] text-[var(--sage-rose)]"
+                            : "bg-[var(--sage-surface-muted)] text-[var(--sage-muted)]"
+                  }`}
+                >
                   {counts[f]}
                 </span>
               </button>
@@ -238,12 +251,16 @@ export default function Tasks({
         </div>
 
         <div>
-          <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Project</p>
+          <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em] mb-2">
+            Project
+          </p>
           <div className="space-y-1">
             <button
               onClick={() => setProjectFilter("all")}
-              className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                projectFilter === "all" ? "bg-teal-600/20 text-teal-300" : "text-stone-400 hover:bg-stone-800"
+              className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                projectFilter === "all"
+                  ? "bg-[var(--sage-accent-soft)] text-[var(--sage-accent)] border border-[color:rgba(15,118,110,0.18)]"
+                  : "text-[var(--sage-muted)] hover:bg-[rgba(251,247,240,0.8)] border border-transparent"
               }`}
             >
               All Projects
@@ -252,8 +269,10 @@ export default function Tasks({
               <button
                 key={p}
                 onClick={() => setProjectFilter(p)}
-                className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                  projectFilter === p ? "bg-teal-600/20 text-teal-300" : "text-stone-400 hover:bg-stone-800"
+                className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-colors ${
+                  projectFilter === p
+                    ? "bg-[var(--sage-accent-soft)] text-[var(--sage-accent)] border border-[color:rgba(15,118,110,0.18)]"
+                    : "text-[var(--sage-muted)] hover:bg-[rgba(251,247,240,0.8)] border border-transparent"
                 }`}
               >
                 {p}
@@ -263,41 +282,40 @@ export default function Tasks({
         </div>
       </div>
 
-      {/* Task list */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <CheckSquare size={18} className="text-indigo-400" />
+            <h2 className="text-lg font-bold text-[var(--sage-text)] flex items-center gap-2">
+              <CheckSquare size={18} className="text-[var(--sage-accent)]" />
               Tasks
             </h2>
-            <p className="text-sm text-stone-400">{filtered.length} task{filtered.length !== 1 ? "s" : ""} shown</p>
+            <p className="text-sm text-[var(--sage-muted)]">
+              {filtered.length} task{filtered.length !== 1 ? "s" : ""} shown
+            </p>
           </div>
           <button
             onClick={handleAIPrioritize}
             disabled={aiLoading}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white text-sm font-medium transition-colors"
+            className="sage-btn-primary flex items-center gap-2 px-4 py-2 rounded-xl disabled:opacity-50 text-sm font-medium transition-colors"
           >
-            {aiLoading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Sparkles size={14} />
-            )}
+            {aiLoading ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
             Ask Sage to Prioritize
           </button>
         </div>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+        <div className="sage-surface rounded-2xl p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Task intake</p>
-              <p className="text-sm text-stone-500 mt-1">
-                `Today` captures work quickly. `Tasks` is where that captured work becomes a real tracked item.
+              <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                Task intake
+              </p>
+              <p className="text-sm text-[var(--sage-muted)] mt-1">
+                Today captures work quickly. Tasks is where that captured work becomes a real tracked item.
               </p>
             </div>
             <button
               onClick={openComposerWithBlank}
-              className="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-medium transition-colors"
+              className="sage-btn-primary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             >
               New task
             </button>
@@ -308,18 +326,18 @@ export default function Tasks({
                 value={draftTitle}
                 onChange={(event) => setDraftTitle(event.target.value)}
                 placeholder="Task title"
-                className="col-span-2 rounded-lg bg-stone-900 border border-stone-700 text-sm text-stone-200 px-3 py-2 focus:outline-none focus:border-cyan-500"
+                className="sage-input col-span-2 rounded-xl text-sm px-3 py-2"
               />
               <textarea
                 value={draftDescription}
                 onChange={(event) => setDraftDescription(event.target.value)}
                 placeholder="Optional context"
-                className="col-span-2 min-h-20 rounded-lg bg-stone-900 border border-stone-700 text-sm text-stone-200 px-3 py-2 focus:outline-none focus:border-cyan-500 resize-none"
+                className="sage-input col-span-2 min-h-20 rounded-xl text-sm px-3 py-2 resize-none"
               />
               <select
                 value={draftPriority}
                 onChange={(event) => setDraftPriority(event.target.value)}
-                className="rounded-lg bg-stone-900 border border-stone-700 text-sm text-stone-200 px-3 py-2 focus:outline-none focus:border-cyan-500"
+                className="sage-input rounded-xl text-sm px-3 py-2"
               >
                 <option value="high">High priority</option>
                 <option value="medium">Medium priority</option>
@@ -329,19 +347,19 @@ export default function Tasks({
                 value={draftProject}
                 onChange={(event) => setDraftProject(event.target.value)}
                 placeholder="Project"
-                className="rounded-lg bg-stone-900 border border-stone-700 text-sm text-stone-200 px-3 py-2 focus:outline-none focus:border-cyan-500"
+                className="sage-input rounded-xl text-sm px-3 py-2"
               />
               <input
                 type="date"
                 value={draftDueDate}
                 onChange={(event) => setDraftDueDate(event.target.value)}
-                className="rounded-lg bg-stone-900 border border-stone-700 text-sm text-stone-200 px-3 py-2 focus:outline-none focus:border-cyan-500"
+                className="sage-input rounded-xl text-sm px-3 py-2"
               />
               <div className="col-span-2 flex gap-2">
                 <button
                   onClick={handleCreateTask}
                   disabled={creatingTask || !draftTitle.trim()}
-                  className="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 disabled:opacity-40 text-white text-xs font-medium transition-colors"
+                  className="sage-btn-primary px-3 py-2 rounded-lg disabled:opacity-40 text-xs font-medium transition-colors"
                 >
                   {creatingTask ? "Creating..." : "Create task"}
                 </button>
@@ -351,29 +369,29 @@ export default function Tasks({
                     setTaskDraft?.(null);
                     setTaskNotice("");
                   }}
-                  className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+                  className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
                 >
                   Cancel
                 </button>
               </div>
             </div>
           )}
-          {taskNotice && (
-            <p className="mt-3 text-xs text-cyan-300">{taskNotice}</p>
-          )}
+          {taskNotice && <p className="mt-3 text-xs text-[var(--sage-accent)]">{taskNotice}</p>}
         </div>
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+        <div className="sage-surface rounded-2xl p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Executive workflow</p>
-              <p className="text-sm text-stone-500 mt-1">
+              <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                Executive workflow
+              </p>
+              <p className="text-sm text-[var(--sage-muted)] mt-1">
                 Tighten the task list, commit the top three, then move straight back into the operating view.
               </p>
             </div>
             <button
               onClick={reviewHighPriority}
-              className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+              className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             >
               Review high priority
             </button>
@@ -382,22 +400,22 @@ export default function Tasks({
             {workflowCards.map((item) => (
               <div
                 key={item.title}
-                className={`rounded-lg border px-3 py-3 ${
+                className={`rounded-xl border px-3 py-3 ${
                   item.active
-                    ? "border-cyan-500/40 bg-cyan-500/10"
-                    : "border-stone-700 bg-stone-900/70"
+                    ? "border-[color:rgba(15,118,110,0.2)] bg-[var(--sage-accent-soft)]"
+                    : "border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)]"
                 }`}
               >
-                <p className={`text-xs font-semibold ${item.active ? "text-cyan-200" : "text-stone-300"}`}>
+                <p className={`text-xs font-semibold ${item.active ? "text-[var(--sage-accent)]" : "text-[var(--sage-text)]"}`}>
                   {item.title}
                 </p>
-                <p className="text-xs text-stone-500 mt-2 min-h-10">{item.detail}</p>
+                <p className="text-xs text-[var(--sage-muted)] mt-2 min-h-10">{item.detail}</p>
                 <button
                   onClick={item.action}
                   className={`mt-3 w-full px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     item.active
-                      ? "bg-cyan-600 hover:bg-cyan-500 text-white"
-                      : "bg-stone-800 hover:bg-stone-700 border border-stone-700 text-stone-200"
+                      ? "sage-btn-primary"
+                      : "sage-btn-secondary"
                   }`}
                 >
                   {item.actionLabel}
@@ -408,38 +426,38 @@ export default function Tasks({
         </div>
 
         {aiNote && (
-          <div className="rounded-xl bg-violet-900/20 border border-violet-500/20 p-4">
-            <p className="text-xs font-semibold text-violet-300 mb-2 flex items-center gap-1">
+          <div className="rounded-2xl border border-[color:rgba(15,118,110,0.18)] bg-[var(--sage-accent-soft)] p-4">
+            <p className="text-xs font-semibold text-[var(--sage-accent)] mb-2 flex items-center gap-1">
               <Sparkles size={11} /> Sage Prioritization
             </p>
-            <p className="text-sm text-stone-300 whitespace-pre-wrap">{aiNote}</p>
+            <p className="text-sm text-[var(--sage-text)] whitespace-pre-wrap leading-6">{aiNote}</p>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {workflowCards.map((item) => (
                 <div
                   key={item.title}
-                  className={`rounded-lg border px-3 py-3 ${
+                  className={`rounded-xl border px-3 py-3 ${
                     item.active
-                      ? "border-violet-500/40 bg-violet-500/10"
-                      : "border-stone-700 bg-stone-900/70"
+                      ? "border-[color:rgba(15,118,110,0.2)] bg-[rgba(251,247,240,0.72)]"
+                      : "border-[var(--sage-border)] bg-[rgba(251,247,240,0.55)]"
                   }`}
                 >
-                  <p className={`text-xs font-semibold ${item.active ? "text-violet-200" : "text-stone-400"}`}>
+                  <p className={`text-xs font-semibold ${item.active ? "text-[var(--sage-accent)]" : "text-[var(--sage-muted)]"}`}>
                     {item.title}
                   </p>
-                  <p className="text-xs text-stone-500 mt-2">{item.detail}</p>
+                  <p className="text-xs text-[var(--sage-muted)] mt-2">{item.detail}</p>
                 </div>
               ))}
             </div>
             <div className="mt-4 flex gap-2">
               <button
                 onClick={promoteExecutionQueue}
-                className="px-3 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-medium transition-colors"
+                className="sage-btn-primary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
               >
                 {queuePromoted ? "Open Today focus" : "Make top 3 today's focus"}
               </button>
               <button
                 onClick={reviewHighPriority}
-                className="px-3 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+                className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
               >
                 Review high priority
               </button>
@@ -448,17 +466,19 @@ export default function Tasks({
         )}
 
         {(filter === "high" || workflowStep === "review") && (
-          <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+          <div className="sage-surface rounded-2xl p-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">High Priority Review</p>
-                <p className="text-sm text-stone-500 mt-1">
+                <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                  High Priority Review
+                </p>
+                <p className="text-sm text-[var(--sage-muted)] mt-1">
                   These are the tasks worth executive attention before anything medium or low priority.
                 </p>
               </div>
               <button
                 onClick={() => setFilter("all")}
-                className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+                className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
               >
                 Show all
               </button>
@@ -466,30 +486,35 @@ export default function Tasks({
           </div>
         )}
 
-        <div className="rounded-xl bg-stone-800 border border-stone-700 p-4">
+        <div className="sage-surface rounded-2xl p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Execution Queue</p>
-              <p className="text-sm text-stone-500 mt-1">
+              <p className="text-xs font-semibold text-[var(--sage-soft)] uppercase tracking-[0.18em]">
+                Execution Queue
+              </p>
+              <p className="text-sm text-[var(--sage-muted)] mt-1">
                 What the next working block should absorb.
                 {queuePromoted ? " This queue is now mirrored in Today." : ""}
               </p>
             </div>
             <button
               onClick={promoteExecutionQueue}
-              className="px-3 py-2 rounded-lg bg-stone-900 hover:bg-stone-700 border border-stone-700 text-stone-200 text-xs font-medium transition-colors"
+              className="sage-btn-secondary px-3 py-2 rounded-lg text-xs font-medium transition-colors"
             >
               {queuePromoted ? "Open Today" : "Push to Today"}
             </button>
           </div>
           <div className="mt-4 space-y-2">
             {executionQueue.map((task, index) => (
-              <div key={task.id} className="rounded-lg bg-stone-900/70 border border-stone-700 px-3 py-3">
+              <div
+                key={task.id}
+                className="rounded-xl border border-[var(--sage-border)] bg-[rgba(251,247,240,0.72)] px-3 py-3"
+              >
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-violet-300 font-semibold">#{index + 1}</span>
+                  <span className="text-xs text-[var(--sage-accent)] font-semibold">#{index + 1}</span>
                   <div className="min-w-0">
-                    <p className="text-sm text-stone-200">{task.title}</p>
-                    <p className="text-xs text-stone-500 mt-1">
+                    <p className="text-sm text-[var(--sage-text)]">{task.title}</p>
+                    <p className="text-xs text-[var(--sage-muted)] mt-1">
                       {task.priority} priority
                       {task.due_date ? ` | due ${task.due_date}` : ""}
                       {task.project ? ` | ${task.project}` : ""}
@@ -503,7 +528,7 @@ export default function Tasks({
 
         <div className="space-y-2">
           {filtered.length === 0 && (
-            <div className="text-center text-stone-600 py-16">
+            <div className="text-center text-[var(--sage-soft)] py-16">
               <CheckSquare size={32} className="mx-auto mb-2" />
               <p>No tasks match this filter</p>
             </div>
